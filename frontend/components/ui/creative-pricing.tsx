@@ -141,16 +141,17 @@ function CreativePricing({
                                     "hover:translate-x-[-2px] hover:translate-y-[-2px]",
                                     tier.popular
                                         ? [
-                                              "bg-amber-400 text-zinc-900",
-                                              "hover:bg-amber-300",
+                                              "bg-amber-400 text-zinc-900 font-bold",
+                                              "hover:bg-amber-400 hover:text-zinc-900",
                                               "active:bg-amber-400",
-                                              "dark:hover:bg-amber-300",
+                                              "dark:hover:bg-amber-400",
                                               "dark:active:bg-amber-400",
                                           ]
                                         : [
-                                              "bg-zinc-50 dark:bg-zinc-800",
+                                              "bg-zinc-50 dark:bg-zinc-800 font-bold",
                                               "text-zinc-900 dark:text-white",
-                                              "hover:bg-white dark:hover:bg-zinc-700",
+                                              "hover:bg-zinc-50 hover:text-zinc-900",
+                                              "dark:hover:bg-zinc-800 dark:hover:text-white",
                                               "active:bg-zinc-50 dark:active:bg-zinc-800",
                                           ]
                                 )}

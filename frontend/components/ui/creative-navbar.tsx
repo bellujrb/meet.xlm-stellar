@@ -12,11 +12,10 @@ export function CreativeNavbar() {
     { name: 'Home', href: '#' },
     { name: 'Features', href: '#features' },
     { name: 'Pricing', href: '#pricing' },
-    { name: 'About', href: '#about' },
   ];
 
   return (
-    <nav className="sticky top-0 z-50 w-full backdrop-blur-sm bg-white/80 dark:bg-zinc-900/80 border-b-2 border-zinc-900 dark:border-white">
+    <nav className="sticky top-0 z-50 w-full backdrop-blur-sm bg-[#f5f1e8]/95 dark:bg-zinc-900/80 border-b-2 border-zinc-900 dark:border-white">
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
@@ -64,10 +63,11 @@ export function CreativeNavbar() {
           <div className="hidden md:block">
             <Button
               className={cn(
-                "h-10 px-6 font-handwritten text-base",
+                "h-10 px-6 font-handwritten text-base font-bold",
                 "bg-amber-400 text-zinc-900",
                 "border-2 border-zinc-900 dark:border-white",
                 "shadow-[3px_3px_0px_0px] shadow-zinc-900 dark:shadow-white",
+                "hover:bg-amber-400 hover:text-zinc-900",
                 "hover:shadow-[5px_5px_0px_0px]",
                 "hover:translate-x-[-2px] hover:translate-y-[-2px]",
                 "transition-all duration-300",
@@ -102,10 +102,11 @@ export function CreativeNavbar() {
             ))}
             <Button
               className={cn(
-                "w-full h-10 font-handwritten text-base",
+                "w-full h-10 font-handwritten text-base font-bold",
                 "bg-amber-400 text-zinc-900",
                 "border-2 border-zinc-900",
                 "shadow-[3px_3px_0px_0px] shadow-zinc-900",
+                "hover:bg-amber-400 hover:text-zinc-900",
                 "hover:shadow-[5px_5px_0px_0px]",
                 "transition-all duration-300"
               )}

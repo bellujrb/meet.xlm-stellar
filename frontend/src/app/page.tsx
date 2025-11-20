@@ -1,6 +1,8 @@
 import { CreativePricing } from "@/components/ui/creative-pricing";
 import { CreativeHeader } from "@/components/ui/creative-header";
 import { CreativeNavbar } from "@/components/ui/creative-navbar";
+import { CreativeFooter } from "@/components/ui/creative-footer";
+import { FeaturesSection } from "@/components/ui/features-section";
 import type { PricingTier } from "@/components/ui/creative-pricing";
 import { Pencil, Star, Sparkles } from "lucide-react";
 
@@ -51,7 +53,7 @@ const sampleTiers: PricingTier[] = [
 
 export default function Page() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-blue-50">
+    <div className="min-h-screen bg-[#f5f1e8]">
       {/* Creative Navbar */}
       <CreativeNavbar />
 
@@ -63,6 +65,11 @@ export default function Page() {
         robotSceneUrl={ROBOT_SCENE_URL}
       />
 
+      {/* Features Section */}
+      <div id="features">
+        <FeaturesSection />
+      </div>
+
       {/* Pricing Section */}
       <div className="py-20" id="pricing">
         <CreativePricing 
@@ -72,6 +79,9 @@ export default function Page() {
           tiers={sampleTiers} 
         />
       </div>
+
+      {/* Footer */}
+      <CreativeFooter />
     </div>
   );
 }
