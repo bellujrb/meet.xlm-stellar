@@ -117,4 +117,5 @@ By the end of Stellar Hack+, our MVP is successful if:
 - **Team Name:** Fountain (or Stellar Attendance Protocol — TBD)  
 - **Members & Roles:**  
   - *Lucas Bispo de Oliveira — CEO and Blockchain Engineer*  
-  - *João Rubens — CTO and Software Engineer* 
+  - *João Rubens — CTO and Software Engineer*
+  - *Jenny Tejedor — Designer and Project Manager*
