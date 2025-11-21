@@ -170,14 +170,6 @@ NEXT_PUBLIC_CONTRACT_ID=YOUR_CONTRACT_ID
 ```
 
 **Backend (.env)**
-```bash
-PORT=3001
-STELLAR_NETWORK=testnet
-HORIZON_URL=https://horizon-testnet.stellar.org
-CONTRACT_ID=YOUR_CONTRACT_ID
-SECRET_KEY=YOUR_SECRET_KEY
-DATABASE_URL=postgresql://localhost:5432/meetxlm
-```
 
 ---
 
@@ -186,89 +178,37 @@ DATABASE_URL=postgresql://localhost:5432/meetxlm
 ### Host Journey
 
 **1. Dashboard**
-- View past events (name, date, status)
-- Aggregated metrics: Total attendees, NFTs distributed
-- CTA: "Create New Event"
+
 
 **2. Create Event - Basic Info**
-```
-→ Event Name
-→ Description (500 chars max)
-→ Date & Time
-→ Location (Physical/Online)
-→ Cover Image (16:9 ratio)
-```
+
 
 **3. Create Event - Advanced Config**
-```
-→ Minimum XLM Required (ZK-verified)
-→ Total NFTs to Distribute
-→ Rarity Distribution (Common/Rare/Epic %)
-→ Preview Collection
-```
+
 
 **4. Event Published**
-```
-→ Shareable Link: meetxlm.com/e/[event_id]
-→ QR Code for Registration
-→ Private QR Code for Check-in
-→ Real-time Metrics Dashboard
-```
+
 
 ### Attendee Journey
 
 **1. Event Landing Page**
-```
-→ Event Details
-→ Badge: "🔒 Requires X XLM to participate"
-→ Badge: "🎫 Y spots available"
-→ CTA: "Register Now"
-```
+
 
 **2. Eligibility Verification**
-```
-→ Loading: "Generating ZK proof..."
-→ Process validates balance without exposing wallet
-→ Takes ~5-10 seconds
-```
+
 
 **3a. Approved ✅**
-```
-→ "Your NFT has been minted!"
-→ Preview of Veiled NFT
-→ "Will be revealed at check-in"
-→ Added to Stellar wallet
-```
+
 
 **3b. Not Eligible ❌**
-```
-→ "You don't meet the requirements"
-→ "Minimum X XLM required"
-→ Links to buy XLM
-```
+
 
 **4. My Ticket**
-```
-→ Personal QR Code for Check-in
-→ Event Information
-→ Status: "NFT Veiled 🎭"
-→ Countdown Timer
-```
 
 **5. Check-in Realized 🎊**
-```
-→ Unwrap Animation
-→ NFT Revealed with Rarity
-→ Badge Unlocked: "Reveal Others' NFTs"
-```
 
 **6. Social Game**
-```
-→ Scan other attendees' QR codes
-→ Reveal their NFT rarity
-→ Earn "Revealer" points
-→ Leaderboard
-```
+
 
 ---
 
@@ -356,149 +296,9 @@ Ethereum: 200 × $10 = $2,000 total
 ### Soroban Contract
 
 **Functions:**
-```rust
-// Event Management
-create_event(host, min_xlm, max_attendees, rarity) -> EventId
-get_event(event_id) -> Event
-update_event_status(event_id, status) -> Result<()>
-
-// NFT Lifecycle
-mint_veiled_nft(attendee, event_id) -> NFTId
-reveal_nft(nft_id, seed) -> Rarity
-cross_reveal(revealer, target_nft) -> Result<()>
-
-// Verification
-verify_eligibility_zk(proof, min_xlm) -> bool
-check_nft_ownership(address, nft_id) -> bool
-
-// Admin
-pause_contract() -> Result<()>
-set_admin(new_admin) -> Result<()>
-```
 
 **Storage:**
-```rust
-struct Event {
-    id: BytesN<32>,
-    host: Address,
-    name: String,
-    min_xlm: u64,
-    max_attendees: u32,
-    rarity_config: RarityConfig,
-    created_at: u64,
-    status: EventStatus,
-}
 
-struct NFT {
-    id: BytesN<32>,
-    event_id: BytesN<32>,
-    owner: Address,
-    state: NFTState, // Veiled, SelfRevealed, CrossRevealed
-    rarity: Option<Rarity>,
-    minted_at: u64,
-    revealed_at: Option<u64>,
-    revealed_by: Option<Address>,
-}
-
-enum Rarity {
-    Common = 0,
-    Rare = 1,
-    Epic = 2,
-}
-```
-
-### API Endpoints
-
-**Events**
-```
-POST   /api/events              - Create event
-GET    /api/events/:id          - Get event details
-GET    /api/events              - List events
-PUT    /api/events/:id          - Update event
-DELETE /api/events/:id          - Delete event
-```
-
-**NFTs**
-```
-POST   /api/nfts/mint           - Mint veiled NFT
-POST   /api/nfts/reveal         - Reveal NFT
-GET    /api/nfts/:id            - Get NFT details
-GET    /api/nfts/user/:address  - Get user's NFTs
-```
-
-**Verification**
-```
-POST   /api/verify/eligibility  - Verify ZK proof
-POST   /api/verify/qr           - Verify QR code
-```
-
-**Analytics**
-```
-GET    /api/analytics/event/:id - Event metrics
-GET    /api/analytics/user/:id  - User reputation
-```
-
-### Database Schema
-
-**PostgreSQL Tables:**
-```sql
-CREATE TABLE events (
-    id UUID PRIMARY KEY,
-    contract_event_id BYTEA UNIQUE NOT NULL,
-    host_address VARCHAR(56) NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    description TEXT,
-    start_time TIMESTAMP NOT NULL,
-    location VARCHAR(255),
-    cover_image_url TEXT,
-    min_xlm_required NUMERIC(20,7),
-    max_attendees INT,
-    rarity_common_pct INT,
-    rarity_rare_pct INT,
-    rarity_epic_pct INT,
-    status VARCHAR(20),
-    created_at TIMESTAMP DEFAULT NOW(),
-    updated_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE nfts (
-    id UUID PRIMARY KEY,
-    contract_nft_id BYTEA UNIQUE NOT NULL,
-    event_id UUID REFERENCES events(id),
-    owner_address VARCHAR(56) NOT NULL,
-    state VARCHAR(20) NOT NULL,
-    rarity VARCHAR(20),
-    minted_at TIMESTAMP NOT NULL,
-    revealed_at TIMESTAMP,
-    revealed_by_address VARCHAR(56),
-    metadata_uri TEXT,
-    created_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE users (
-    address VARCHAR(56) PRIMARY KEY,
-    email VARCHAR(255) UNIQUE,
-    name VARCHAR(255),
-    is_custodial BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE check_ins (
-    id UUID PRIMARY KEY,
-    event_id UUID REFERENCES events(id),
-    attendee_address VARCHAR(56) NOT NULL,
-    nft_id UUID REFERENCES nfts(id),
-    checked_in_at TIMESTAMP NOT NULL,
-    checked_in_by VARCHAR(56),
-    location_lat NUMERIC(9,6),
-    location_lng NUMERIC(9,6)
-);
-
-CREATE INDEX idx_events_host ON events(host_address);
-CREATE INDEX idx_nfts_owner ON nfts(owner_address);
-CREATE INDEX idx_nfts_event ON nfts(event_id);
-CREATE INDEX idx_checkins_event ON check_ins(event_id);
-```
 
 ---
 
