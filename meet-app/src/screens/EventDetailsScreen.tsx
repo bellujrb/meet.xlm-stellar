@@ -27,6 +27,10 @@ interface EventDetailsScreenProps {
     description?: string;
   };
   isMinted?: boolean;
+  isRegistered?: boolean;
+  requiresXLM?: boolean;
+  xlmMinimum?: number;
+  onRegister?: () => void;
   mintInfo?: {
     collector: string;
     walletAddress: string;
@@ -48,6 +52,10 @@ export default function EventDetailsScreen({
   onClose,
   event,
   isMinted = false,
+  isRegistered = false,
+  requiresXLM = false,
+  xlmMinimum,
+  onRegister,
   mintInfo,
 }: EventDetailsScreenProps) {
   const [showMintOptions, setShowMintOptions] = useState(false);
@@ -57,12 +65,29 @@ export default function EventDetailsScreen({
     Alert.alert('Mint', `Você selecionou: ${option}`);
   };
 
-  const handleMintPress = () => {
+  const handlePrimaryAction = () => {
     if (isMinted) {
       Alert.alert('Já Coletado', 'Você já mintou este POAP! ✨');
+    } else if (!isRegistered) {
+      // Precisa se registrar primeiro
+      onRegister?.();
+      onClose();
     } else {
+      // Já registrado, pode mintar
       setShowMintOptions(true);
     }
+  };
+
+  const getPrimaryButtonText = () => {
+    if (isMinted) return 'Já Coletado ✨';
+    if (!isRegistered) return 'Registrar';
+    return 'Mint';
+  };
+
+  const getPrimaryButtonIcon = () => {
+    if (isMinted) return 'checkmark-circle';
+    if (!isRegistered) return 'person-add';
+    return 'cube';
   };
 
   const handleContact = () => {
@@ -180,28 +205,46 @@ export default function EventDetailsScreen({
             )}
 
             {/* Status Badge */}
-            <View style={styles.attendingBadge}>
-              <Ionicons name="checkmark-circle" size={24} color="#4ADE80" />
-              <Text style={styles.attendingText}>Você Vai</Text>
-            </View>
+            {isRegistered && (
+              <View style={styles.attendingBadge}>
+                <Ionicons name="checkmark-circle" size={24} color="#4ADE80" />
+                <Text style={styles.attendingText}>Você Vai</Text>
+              </View>
+            )}
+
+            {/* XLM Requirement Badge */}
+            {requiresXLM && xlmMinimum && !isRegistered && (
+              <View style={styles.xlmRequiredBadge}>
+                <View style={styles.xlmIconSmall}>
+                  <Text style={styles.xlmIconText}>$</Text>
+                </View>
+                <Text style={styles.xlmRequiredText}>
+                  Requer {xlmMinimum} XLM mínimo
+                </Text>
+                <View style={styles.zkBadge}>
+                  <Ionicons name="shield-checkmark" size={16} color="#18181B" />
+                  <Text style={styles.zkBadgeText}>ZK</Text>
+                </View>
+              </View>
+            )}
           </View>
         </ScrollView>
 
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
-          {/* Mint Button */}
+          {/* Primary Action Button (Register or Mint) */}
           <TouchableOpacity
             style={[
-              styles.actionButton, 
-              styles.mintButton,
+              styles.actionButton,
+              !isRegistered ? styles.registerButton : styles.mintButton,
               isMinted && styles.mintButtonDisabled
             ]}
-            onPress={handleMintPress}
+            onPress={handlePrimaryAction}
             activeOpacity={isMinted ? 1 : 0.8}
             disabled={isMinted}
           >
             <Ionicons 
-              name={isMinted ? "checkmark-circle" : "cube"} 
+              name={getPrimaryButtonIcon()} 
               size={24} 
               color={isMinted ? "#4ADE80" : "#18181B"} 
             />
@@ -209,7 +252,7 @@ export default function EventDetailsScreen({
               styles.actionButtonText,
               isMinted && styles.actionButtonTextDisabled
             ]}>
-              {isMinted ? "Já Coletado ✨" : "Mint"}
+              {getPrimaryButtonText()}
             </Text>
           </TouchableOpacity>
 
@@ -561,12 +604,67 @@ const styles = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 0,
   },
+  registerButton: {
+    backgroundColor: '#A78BFA',
+  },
   mintButton: {
     backgroundColor: '#FBBF24',
   },
   mintButtonDisabled: {
     backgroundColor: '#E5E7EB',
     opacity: 0.7,
+  },
+  xlmRequiredBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#FEF3C7',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#18181B',
+    shadowColor: '#18181B',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    marginTop: 16,
+  },
+  xlmIconSmall: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FBBF24',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#18181B',
+  },
+  xlmIconText: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#18181B',
+  },
+  xlmRequiredText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#18181B',
+    flex: 1,
+  },
+  zkBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#18181B',
+  },
+  zkBadgeText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#18181B',
   },
   actionButtonText: {
     fontSize: 18,

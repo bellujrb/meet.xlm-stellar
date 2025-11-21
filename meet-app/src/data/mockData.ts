@@ -53,6 +53,55 @@ export const MOCK_EVENTS: Event[] = [
   },
 ];
 
+// Eventos disponíveis para busca
+export const AVAILABLE_EVENTS: Event[] = [
+  {
+    id: '5',
+    title: 'Convergence by Noir',
+    organizer: 'Noir @Devconnect',
+    organizerIcon: '⚡',
+    time: 'Hoje, 10:00',
+    location: 'Buenos Aires',
+    image: require('../../assets/icon.png'),
+    status: 'LIVE',
+    description: 'Conferência sobre segurança em smart contracts',
+    attendees: 200,
+    requiresXLM: true,
+    xlmMinimum: 100,
+    isRegistered: false,
+  },
+  {
+    id: '6',
+    title: 'ArbiPanadas',
+    organizer: 'Arbitrum',
+    organizerIcon: '🥟',
+    time: 'Hoje, 12:00',
+    location: 'Buenos Aires',
+    image: require('../../assets/icon.png'),
+    status: 'LIVE',
+    description: 'Evento gastronômico da comunidade Arbitrum',
+    attendees: 150,
+    requiresXLM: false,
+    isRegistered: false,
+  },
+  {
+    id: '7',
+    title: 'P2P Privacy Hacker Lounge',
+    organizer: 'Logos',
+    organizerIcon: 'λ',
+    time: 'Amanhã, 10:00',
+    location: 'Buenos Aires',
+    image: require('../../assets/icon.png'),
+    status: 'UPCOMING',
+    statusTime: 'Em 1d',
+    description: 'Workshop sobre privacidade e tecnologias P2P',
+    attendees: 80,
+    requiresXLM: true,
+    xlmMinimum: 50,
+    isRegistered: false,
+  },
+];
+
 export const MOCK_CALENDARS: Calendar[] = [
   {
     id: '1',

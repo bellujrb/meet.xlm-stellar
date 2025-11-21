@@ -11,32 +11,28 @@ import {
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { Ionicons } from '@expo/vector-icons';
 
-interface SuccessModalProps {
+interface RegisterSuccessModalProps {
   visible: boolean;
   eventName: string;
-  eventDate: string;
   onClose: () => void;
+  hadZKProof?: boolean;
 }
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
-export default function SuccessModal({
+export default function RegisterSuccessModal({
   visible,
   eventName,
-  eventDate,
   onClose,
-}: SuccessModalProps) {
+  hadZKProof = false,
+}: RegisterSuccessModalProps) {
   const scaleAnim = useRef(new Animated.Value(0)).current;
-  const bounceAnim = useRef(new Animated.Value(0)).current;
-  const rotateAnim = useRef(new Animated.Value(0)).current;
   const confettiRef = useRef<any>(null);
 
   useEffect(() => {
     if (visible) {
-      // Trigger confetti
       confettiRef.current?.start();
 
-      // Simple scale animation
       Animated.spring(scaleAnim, {
         toValue: 1,
         tension: 80,
@@ -54,10 +50,8 @@ export default function SuccessModal({
       transparent={false}
       animationType="fade"
       onRequestClose={onClose}
-      statusBarTranslucent={false}
     >
       <View style={styles.container}>
-        {/* Confetti */}
         <ConfettiCannon
           ref={confettiRef}
           count={150}
@@ -69,19 +63,15 @@ export default function SuccessModal({
           colors={['#FBBF24', '#A78BFA', '#4ADE80', '#F472B6', '#60A5FA']}
         />
 
-        {/* Close Button */}
         <TouchableOpacity
           style={styles.closeButton}
           onPress={onClose}
           activeOpacity={0.8}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           <Ionicons name="close" size={28} color="#18181B" />
         </TouchableOpacity>
 
-        {/* Success Content */}
         <View style={styles.content}>
-          {/* Animated Check Circle */}
           <Animated.View
             style={[
               styles.checkCircle,
@@ -93,32 +83,32 @@ export default function SuccessModal({
             <Ionicons name="checkmark-circle" size={120} color="#4ADE80" />
           </Animated.View>
 
-          {/* Success Text */}
           <View style={styles.textContainer}>
-            <Text style={styles.successTitle}>Evento Criado! 🎉</Text>
+            <Text style={styles.successTitle}>Registrado! 🎉</Text>
             <View style={styles.eventNameCard}>
               <Text style={styles.eventName}>{eventName}</Text>
             </View>
           </View>
 
-          {/* Event Details Card */}
-          <View style={styles.detailsCard}>
-            <View style={styles.detailRow}>
-              <View style={styles.iconCircle}>
-                <Ionicons name="time" size={24} color="#18181B" />
+          {hadZKProof && (
+            <View style={styles.infoCard}>
+              <View style={styles.infoRow}>
+                <View style={styles.iconCircle}>
+                  <Ionicons name="shield-checkmark" size={24} color="#18181B" />
+                </View>
+                <Text style={styles.infoText}>
+                  Prova ZK verificada com sucesso
+                </Text>
               </View>
-              <Text style={styles.detailText}>{eventDate}</Text>
             </View>
-          </View>
+          )}
 
-          {/* View Event Button */}
           <TouchableOpacity
             style={styles.viewButton}
             onPress={onClose}
             activeOpacity={0.8}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Text style={styles.viewButtonText}>Ver Página do Evento</Text>
+            <Text style={styles.viewButtonText}>Ver Evento</Text>
             <Ionicons name="arrow-forward" size={24} color="#18181B" />
           </TouchableOpacity>
         </View>
@@ -174,7 +164,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   eventNameCard: {
-    backgroundColor: '#FBBF24',
+    backgroundColor: '#4ADE80',
     paddingHorizontal: 24,
     paddingVertical: 16,
     borderRadius: 20,
@@ -193,7 +183,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: -0.5,
   },
-  detailsCard: {
+  infoCard: {
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 24,
     paddingVertical: 20,
@@ -207,7 +197,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     width: '100%',
   },
-  detailRow: {
+  infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
@@ -222,8 +212,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#18181B',
   },
-  detailText: {
-    fontSize: 18,
+  infoText: {
+    fontSize: 16,
     fontWeight: '700',
     color: '#18181B',
     flex: 1,

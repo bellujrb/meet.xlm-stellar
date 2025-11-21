@@ -7,21 +7,41 @@ import {
   TouchableOpacity,
   SafeAreaView,
   Alert,
+  Modal,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import EventCard from '../components/EventCard';
 import CalendarCard from '../components/CalendarCard';
 import Header from '../components/Header';
 import BottomNavigation from '../components/BottomNavigation';
 import EventDetailsScreen from './EventDetailsScreen';
 import CreateEventScreen from './CreateEventScreen';
-import { MOCK_EVENTS, MOCK_CALENDARS } from '../data/mockData';
-import { TabName } from '../types';
+import SearchScreen from './SearchScreen';
+import NotificationsScreen from './NotificationsScreen';
+import SettingsScreen from './SettingsScreen';
+import SuccessModal from '../components/SuccessModal';
+import ZKProofModal from '../components/ZKProofModal';
+import RegisterSuccessModal from '../components/RegisterSuccessModal';
+import { MOCK_EVENTS, MOCK_CALENDARS, AVAILABLE_EVENTS } from '../data/mockData';
+import { TabName, Event } from '../types';
 
 export default function HomeScreen() {
   const [activeTab, setActiveTab] = useState<TabName>('home');
-  const [selectedEvent, setSelectedEvent] = useState<typeof MOCK_EVENTS[0] | null>(null);
+  const [currentScreen, setCurrentScreen] = useState<'home' | 'search' | 'notifications' | 'settings'>('home');
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showEventDetails, setShowEventDetails] = useState(false);
   const [showCreateEvent, setShowCreateEvent] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [createdEventName, setCreatedEventName] = useState('');
+  const [createdEventDate, setCreatedEventDate] = useState('');
+  const [showZKProof, setShowZKProof] = useState(false);
+  const [showRegisterSuccess, setShowRegisterSuccess] = useState(false);
+  const [selectedEventForRegister, setSelectedEventForRegister] = useState<Event | null>(null);
+
+  // Filtra apenas eventos confirmados para a home
+  const confirmedEvents = MOCK_EVENTS.filter(
+    (event) => event.id === '1' || event.id === '2'
+  );
 
   const handleEventPress = (eventId: string) => {
     const event = MOCK_EVENTS.find((e) => e.id === eventId);
@@ -35,21 +55,82 @@ export default function HomeScreen() {
     Alert.alert('Calendário', `Você clicou no calendário ${calendarId}`);
   };
 
+  const handleLogoutPress = () => {
+    Alert.alert(
+      'Desconectar',
+      'Tem certeza que deseja desconectar sua carteira?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Desconectar',
+          style: 'destructive',
+          onPress: () => Alert.alert('Desconectado', 'Até logo! 👋'),
+        },
+      ]
+    );
+  };
+
   const handleTabPress = (tab: TabName) => {
     setActiveTab(tab);
     if (tab === 'add') {
       setShowCreateEvent(true);
+    } else if (tab === 'search') {
+      setCurrentScreen('search');
+    } else if (tab === 'home') {
+      setCurrentScreen('home');
+    } else if (tab === 'notifications') {
+      setCurrentScreen('notifications');
+    } else if (tab === 'settings') {
+      setCurrentScreen('settings');
+    }
+  };
+
+  const handleEventCreated = (eventName: string, eventDate: string) => {
+    setCreatedEventName(eventName);
+    setCreatedEventDate(eventDate);
+    setShowSuccess(true);
+  };
+
+  const handleSearchEventPress = (event: Event) => {
+    setSelectedEvent(event);
+    setShowEventDetails(true);
+  };
+
+  const [hadZKProof, setHadZKProof] = useState(false);
+
+  const handleRegister = (event: Event) => {
+    setSelectedEventForRegister(event);
+    if (event.requiresXLM && event.xlmMinimum) {
+      setHadZKProof(true);
+      setShowZKProof(true);
     } else {
-      Alert.alert('Navegação', `Você clicou em ${tab}`);
+      // Registro direto sem ZK
+      setHadZKProof(false);
+      setShowRegisterSuccess(true);
+    }
+  };
+
+  const handleZKProofSuccess = () => {
+    setShowZKProof(false);
+    setShowRegisterSuccess(true);
+  };
+
+  const handleRegisterComplete = () => {
+    setShowRegisterSuccess(false);
+    // Marcar evento como registrado
+    if (selectedEventForRegister) {
+      selectedEventForRegister.isRegistered = true;
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <Header 
-          onSettingsPress={() => Alert.alert('Configurações', 'Em desenvolvimento...')}
-        />
+      {/* Conditional Screen Rendering */}
+      {currentScreen === 'home' ? (
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          <Header 
+            onSettingsPress={handleLogoutPress}
+          />
 
         {/* Seus Eventos Section */}
         <View style={[styles.section, styles.firstSection]}>
@@ -67,21 +148,38 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
-          {MOCK_EVENTS.map((event) => (
-            <EventCard
-              key={event.id}
-              title={event.title}
-              organizer={event.organizer}
-              organizerIcon={event.organizerIcon}
-              time={event.time}
-              location={event.location}
-              image={event.image}
-              status={event.status}
-              statusTime={event.statusTime}
-              onPress={() => handleEventPress(event.id)}
-              confirmed={event.id === '1' || event.id === '2'}
-            />
-          ))}
+          {confirmedEvents.length > 0 ? (
+            confirmedEvents.map((event) => (
+              <EventCard
+                key={event.id}
+                title={event.title}
+                organizer={event.organizer}
+                organizerIcon={event.organizerIcon}
+                time={event.time}
+                location={event.location}
+                image={event.image}
+                status={event.status}
+                statusTime={event.statusTime}
+                onPress={() => handleEventPress(event.id)}
+                confirmed={true}
+              />
+            ))
+          ) : (
+            <View style={styles.emptyEventsState}>
+              <Text style={styles.emptyEventsEmoji}>🎫</Text>
+              <Text style={styles.emptyEventsText}>
+                Você ainda não confirmou presença em nenhum evento
+              </Text>
+              <TouchableOpacity
+                style={styles.exploreButton}
+                onPress={() => setCurrentScreen('search')}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="search" size={20} color="#18181B" />
+                <Text style={styles.exploreButtonText}>Explorar Eventos</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         {/* Seus Calendários Section */}
@@ -116,8 +214,38 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
 
-        <View style={{ height: 100 }} />
-      </ScrollView>
+          <View style={{ height: 100 }} />
+        </ScrollView>
+      ) : currentScreen === 'search' ? (
+        <SearchScreen
+          visible={true}
+          onClose={() => {
+            setCurrentScreen('home');
+            setActiveTab('home');
+          }}
+          onEventPress={handleSearchEventPress}
+          availableEvents={AVAILABLE_EVENTS}
+          onLogout={handleLogoutPress}
+        />
+      ) : currentScreen === 'notifications' ? (
+        <NotificationsScreen
+          visible={true}
+          onClose={() => {
+            setCurrentScreen('home');
+            setActiveTab('home');
+          }}
+          onLogout={handleLogoutPress}
+        />
+      ) : currentScreen === 'settings' ? (
+        <SettingsScreen
+          visible={true}
+          onClose={() => {
+            setCurrentScreen('home');
+            setActiveTab('home');
+          }}
+          onLogout={handleLogoutPress}
+        />
+      ) : null}
 
       <BottomNavigation 
         activeTab={activeTab}
@@ -128,6 +256,31 @@ export default function HomeScreen() {
       <CreateEventScreen
         visible={showCreateEvent}
         onClose={() => setShowCreateEvent(false)}
+        onSuccess={handleEventCreated}
+      />
+
+      {/* Success Modal with Confetti */}
+      <SuccessModal
+        visible={showSuccess}
+        eventName={createdEventName}
+        eventDate={createdEventDate}
+        onClose={() => setShowSuccess(false)}
+      />
+
+      {/* ZK Proof Modal */}
+      <ZKProofModal
+        visible={showZKProof}
+        xlmRequired={selectedEventForRegister?.xlmMinimum || 0}
+        onClose={() => setShowZKProof(false)}
+        onSuccess={handleZKProofSuccess}
+      />
+
+      {/* Register Success Modal */}
+      <RegisterSuccessModal
+        visible={showRegisterSuccess}
+        eventName={selectedEventForRegister?.title || ''}
+        onClose={handleRegisterComplete}
+        hadZKProof={hadZKProof}
       />
 
       {/* Event Details Modal */}
@@ -137,6 +290,10 @@ export default function HomeScreen() {
           onClose={() => setShowEventDetails(false)}
           event={selectedEvent}
           isMinted={selectedEvent.id === '1' || selectedEvent.id === '2'}
+          isRegistered={selectedEvent.isRegistered || false}
+          requiresXLM={selectedEvent.requiresXLM || false}
+          xlmMinimum={selectedEvent.xlmMinimum}
+          onRegister={() => handleRegister(selectedEvent)}
           mintInfo={
             selectedEvent.id === '1'
               ? {
@@ -247,6 +404,51 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#71717A',
     fontWeight: '700',
+  },
+  emptyEventsState: {
+    padding: 40,
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 3,
+    borderColor: '#18181B',
+    borderStyle: 'dashed',
+    shadowColor: '#18181B',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+  },
+  emptyEventsEmoji: {
+    fontSize: 64,
+    marginBottom: 16,
+  },
+  emptyEventsText: {
+    fontSize: 16,
+    color: '#71717A',
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 24,
+  },
+  exploreButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#A78BFA',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#18181B',
+    shadowColor: '#18181B',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+  },
+  exploreButtonText: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#18181B',
   },
 });
 

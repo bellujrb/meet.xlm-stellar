@@ -12,6 +12,9 @@ export interface Event {
   statusTime?: string;
   description?: string;
   attendees?: number;
+  requiresXLM?: boolean;
+  xlmMinimum?: number;
+  isRegistered?: boolean;
 }
 
 export interface Calendar {
@@ -22,5 +25,5 @@ export interface Calendar {
   eventCount?: number;
 }
 
-export type TabName = 'home' | 'search' | 'add' | 'favorites' | 'messages';
+export type TabName = 'home' | 'search' | 'add' | 'notifications' | 'settings';
 
