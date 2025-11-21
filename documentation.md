@@ -1,5 +1,4 @@
-# Project Name  
-**Meet.XLM**  
+# Meet.XLM
 
 ---
 
