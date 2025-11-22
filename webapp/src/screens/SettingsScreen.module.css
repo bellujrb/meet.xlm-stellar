@@ -1,0 +1,253 @@
+.container {
+  min-height: 100vh;
+  background-color: #F5F1E8;
+  padding-bottom: 80px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 3px solid #18181B;
+  background-color: #F5F1E8;
+}
+
+.headerTitle {
+  font-size: 28px;
+  font-weight: 800;
+  color: #18181B;
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+
+.closeButton {
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  background-color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #18181B;
+  box-shadow: 2px 2px 0px 0px #18181B;
+  cursor: pointer;
+  color: #18181B;
+  transition: transform 0.1s;
+}
+
+.closeButton:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px 0px #18181B;
+}
+
+.scrollView {
+  flex: 1;
+}
+
+.content {
+  padding: 20px;
+}
+
+.walletCard {
+  background-color: #E9D5FF;
+  border-radius: 20px;
+  border: 3px solid #18181B;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 4px 4px 0px 0px #18181B;
+}
+
+.walletHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  background-color: #A78BFA;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #18181B;
+}
+
+.avatarEmoji {
+  font-size: 24px;
+}
+
+.walletAddress {
+  font-size: 16px;
+  font-weight: 700;
+  color: #18181B;
+  font-family: monospace;
+}
+
+.walletActions {
+  display: flex;
+  align-items: center;
+}
+
+.walletActionButton {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.walletActionText {
+  font-size: 15px;
+  font-weight: 700;
+  color: #7C3AED;
+}
+
+.actionDivider {
+  width: 2px;
+  height: 24px;
+  background-color: #18181B;
+}
+
+.logoutButton {
+  background-color: #FFFFFF;
+  padding: 16px;
+  border-radius: 16px;
+  border: 2px solid #18181B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  box-shadow: 3px 3px 0px 0px #18181B;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+  width: 100%;
+}
+
+.logoutButton:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px 0px #18181B;
+}
+
+.logoutButtonText {
+  font-size: 16px;
+  font-weight: 800;
+  color: #7C3AED;
+}
+
+.menuSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.menuItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #FFFFFF;
+  padding: 20px;
+  border-radius: 16px;
+  border: 2px solid #18181B;
+  box-shadow: 3px 3px 0px 0px #18181B;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.menuItem:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px 0px #18181B;
+}
+
+.menuItemText {
+  font-size: 18px;
+  font-weight: 700;
+  color: #18181B;
+}
+
+.feedbackCard {
+  background-color: #E9D5FF;
+  border-radius: 20px;
+  border: 3px solid #18181B;
+  padding: 20px;
+  margin-bottom: 32px;
+  box-shadow: 4px 4px 0px 0px #18181B;
+}
+
+.feedbackButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #FFFFFF;
+  padding: 16px;
+  border-radius: 16px;
+  border: 2px solid #18181B;
+  box-shadow: 2px 2px 0px 0px #18181B;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+  width: 100%;
+}
+
+.feedbackButton:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px 0px #18181B;
+}
+
+.feedbackButtonText {
+  font-size: 16px;
+  font-weight: 800;
+  color: #18181B;
+  flex: 1;
+}
+
+.appInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  gap: 8px;
+}
+
+.appInfoTitle {
+  font-size: 20px;
+  font-weight: 800;
+  color: #18181B;
+  margin-bottom: 4px;
+}
+
+.appInfoVersion {
+  font-size: 14px;
+  font-weight: 600;
+  color: #71717A;
+}
+
+.uuidRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.appInfoUUID {
+  font-size: 12px;
+  font-weight: 600;
+  color: #71717A;
+  font-family: monospace;
+}
+
+.copyButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+

@@ -1,0 +1,296 @@
+import React, { useState } from 'react';
+import { IoSearch, IoAddCircle } from 'react-icons/io5';
+import EventCard from '../components/EventCard';
+import CalendarCard from '../components/CalendarCard';
+import Header from '../components/Header';
+import UserMenu from '../components/UserMenu';
+import { useStellarWallet } from '../hooks/useStellarWallet';
+import BottomNavigation from '../components/BottomNavigation';
+import SuccessModal from '../components/SuccessModal';
+import ZKProofModal from '../components/ZKProofModal';
+import RegisterSuccessModal from '../components/RegisterSuccessModal';
+import { MOCK_EVENTS, MOCK_CALENDARS, AVAILABLE_EVENTS } from '../data/mockData';
+import { TabName, Event } from '../types';
+import styles from './HomeScreen.module.css';
+import SearchScreen from './SearchScreen';
+import NotificationsScreen from './NotificationsScreen';
+import SettingsScreen from './SettingsScreen';
+import EventDetailsScreen from './EventDetailsScreen';
+import CreateEventScreen from './CreateEventScreen';
+
+interface HomeScreenProps {
+  onLogout: () => void;
+}
+
+export default function HomeScreen({ onLogout }: HomeScreenProps) {
+  const [activeTab, setActiveTab] = useState<TabName>('home');
+  const [currentScreen, setCurrentScreen] = useState<'home' | 'search' | 'notifications' | 'settings'>('home');
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [showEventDetails, setShowEventDetails] = useState(false);
+  const [showCreateEvent, setShowCreateEvent] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [createdEventName, setCreatedEventName] = useState('');
+  const [createdEventDate, setCreatedEventDate] = useState('');
+  const [showZKProof, setShowZKProof] = useState(false);
+  const [showRegisterSuccess, setShowRegisterSuccess] = useState(false);
+  const [selectedEventForRegister, setSelectedEventForRegister] = useState<Event | null>(null);
+  const { publicKey: stellarAddress } = useStellarWallet(true);
+
+  const confirmedEvents = MOCK_EVENTS.filter(
+    (event) => event.id === '1' || event.id === '2'
+  );
+
+  const handleEventPress = (eventId: string) => {
+    const event = MOCK_EVENTS.find((e) => e.id === eventId);
+    if (event) {
+      setSelectedEvent(event);
+      setShowEventDetails(true);
+    }
+  };
+
+  const handleCalendarPress = (calendarId: string) => {
+    alert(`You clicked on calendar ${calendarId}`);
+  };
+
+  const handleLogoutPress = () => {
+    if (confirm('Are you sure you want to disconnect your wallet?')) {
+      onLogout();
+    }
+  };
+
+  const handleTabPress = (tab: TabName) => {
+    setActiveTab(tab);
+    if (tab === 'add') {
+      setShowCreateEvent(true);
+    } else if (tab === 'search') {
+      setCurrentScreen('search');
+    } else if (tab === 'home') {
+      setCurrentScreen('home');
+    } else if (tab === 'notifications') {
+      setCurrentScreen('notifications');
+    } else if (tab === 'settings') {
+      setCurrentScreen('settings');
+    }
+  };
+
+  const handleEventCreated = (eventName: string, eventDate: string) => {
+    setCreatedEventName(eventName);
+    setCreatedEventDate(eventDate);
+    setShowSuccess(true);
+  };
+
+  const handleSearchEventPress = (event: Event) => {
+    setSelectedEvent(event);
+    setShowEventDetails(true);
+  };
+
+  const [hadZKProof, setHadZKProof] = useState(false);
+
+  const handleRegister = (event: Event) => {
+    setSelectedEventForRegister(event);
+    if (event.requiresXLM && event.xlmMinimum) {
+      setHadZKProof(true);
+      setShowZKProof(true);
+    } else {
+      setHadZKProof(false);
+      setShowRegisterSuccess(true);
+    }
+  };
+
+  const handleZKProofSuccess = () => {
+    setShowZKProof(false);
+    setShowRegisterSuccess(true);
+  };
+
+  const handleRegisterComplete = () => {
+    setShowRegisterSuccess(false);
+    if (selectedEventForRegister) {
+      selectedEventForRegister.isRegistered = true;
+    }
+  };
+
+  return (
+    <div className={styles.container}>
+      {currentScreen === 'home' ? (
+        <div className={styles.scrollView}>
+          <Header 
+            onSettingsPress={handleLogoutPress}
+            rightComponent={
+              <UserMenu
+                onLogout={handleLogoutPress}
+                stellarAddress={stellarAddress || undefined}
+              />
+            }
+          />
+
+          <div className={`${styles.section} ${styles.firstSection}`}>
+            <div className={styles.sectionHeader}>
+              <div className={styles.titleWithEmoji}>
+                <h2 className={styles.sectionTitle}>Your Events</h2>
+                <span className={styles.decorativeEmoji}>🎉</span>
+              </div>
+              <button 
+                onClick={() => alert('See All - Loading all events...')}
+                className={styles.seeAllBadge}
+              >
+                <span className={styles.seeAllButton}>See All ›</span>
+              </button>
+            </div>
+
+            {confirmedEvents.length > 0 ? (
+              confirmedEvents.map((event) => (
+                <EventCard
+                  key={event.id}
+                  title={event.title}
+                  organizer={event.organizer}
+                  organizerIcon={event.organizerIcon}
+                  time={event.time}
+                  location={event.location}
+                  image={event.image}
+                  status={event.status}
+                  statusTime={event.statusTime}
+                  onPress={() => handleEventPress(event.id)}
+                  confirmed={true}
+                />
+              ))
+            ) : (
+              <div className={styles.emptyEventsState}>
+                <div className={styles.emptyEventsEmoji}>🎫</div>
+                <p className={styles.emptyEventsText}>
+                  You haven't confirmed attendance at any events yet
+                </p>
+                <button
+                  className={styles.exploreButton}
+                  onClick={() => setCurrentScreen('search')}
+                >
+                  <IoSearch size={20} />
+                  <span className={styles.exploreButtonText}>Explore Events</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <div className={styles.titleWithEmoji}>
+                <h2 className={styles.sectionTitle}>Your Collections</h2>
+                <span className={styles.decorativeEmoji}>📅</span>
+              </div>
+              <button 
+                onClick={() => alert('See All - Loading all collections...')}
+                className={styles.seeAllBadge}
+              >
+                <span className={styles.seeAllButton}>See All ›</span>
+              </button>
+            </div>
+
+            <div className={styles.calendarsScrollView}>
+              {MOCK_CALENDARS.map((calendar) => (
+                <CalendarCard
+                  key={calendar.id}
+                  name={calendar.name}
+                  image={calendar.image}
+                  onPress={() => handleCalendarPress(calendar.id)}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div style={{ height: 100 }} />
+        </div>
+      ) : currentScreen === 'search' ? (
+        <SearchScreen
+          visible={true}
+          onClose={() => {
+            setCurrentScreen('home');
+            setActiveTab('home');
+          }}
+          onEventPress={handleSearchEventPress}
+          availableEvents={AVAILABLE_EVENTS}
+          onLogout={handleLogoutPress}
+        />
+      ) : currentScreen === 'notifications' ? (
+        <NotificationsScreen
+          visible={true}
+          onClose={() => {
+            setCurrentScreen('home');
+            setActiveTab('home');
+          }}
+          onLogout={handleLogoutPress}
+        />
+      ) : currentScreen === 'settings' ? (
+        <SettingsScreen
+          visible={true}
+          onClose={() => {
+            setCurrentScreen('home');
+            setActiveTab('home');
+          }}
+          onLogout={handleLogoutPress}
+        />
+      ) : null}
+
+      <BottomNavigation 
+        activeTab={activeTab}
+        onTabPress={handleTabPress}
+      />
+
+      <CreateEventScreen
+        visible={showCreateEvent}
+        onClose={() => setShowCreateEvent(false)}
+        onSuccess={handleEventCreated}
+      />
+
+      <SuccessModal
+        visible={showSuccess}
+        eventName={createdEventName}
+        eventDate={createdEventDate}
+        onClose={() => setShowSuccess(false)}
+      />
+
+      <ZKProofModal
+        visible={showZKProof}
+        xlmRequired={selectedEventForRegister?.xlmMinimum || 0}
+        onClose={() => setShowZKProof(false)}
+        onSuccess={handleZKProofSuccess}
+      />
+
+      <RegisterSuccessModal
+        visible={showRegisterSuccess}
+        eventName={selectedEventForRegister?.title || ''}
+        onClose={handleRegisterComplete}
+        hadZKProof={hadZKProof}
+      />
+
+      {selectedEvent && (
+        <EventDetailsScreen
+          visible={showEventDetails}
+          onClose={() => setShowEventDetails(false)}
+          event={selectedEvent}
+          isMinted={selectedEvent.id === '1' || selectedEvent.id === '2'}
+          isRegistered={selectedEvent.isRegistered || false}
+          requiresXLM={selectedEvent.requiresXLM || false}
+          xlmMinimum={selectedEvent.xlmMinimum}
+          onRegister={() => handleRegister(selectedEvent)}
+          mintInfo={
+            selectedEvent.id === '1'
+              ? {
+                  collector: 'bellu.xlm',
+                  walletAddress: '0x1146dda2581e43802c201155bd6d4ae6bc59eea0',
+                  mintedDate: '16 hours ago',
+                  blockchain: 'Stellar',
+                }
+              : selectedEvent.id === '2'
+              ? {
+                  collector: 'crypto.stars',
+                  walletAddress: '0xabcd1234ef5678901234567890abcdef12345678',
+                  mintedDate: '2 days ago',
+                  blockchain: 'Stellar',
+                }
+              : undefined
+          }
+        />
+      )}
+    </div>
+  );
+}
+

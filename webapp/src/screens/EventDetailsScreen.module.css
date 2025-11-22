@@ -1,0 +1,537 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: #F5F1E8;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  border-top: 3px solid #18181B;
+  border-left: 3px solid #18181B;
+  border-right: 3px solid #18181B;
+}
+
+.header {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 20px;
+  border-bottom: 3px solid #18181B;
+}
+
+.closeButton {
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  background-color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #18181B;
+  box-shadow: 2px 2px 0px 0px #18181B;
+  cursor: pointer;
+  color: #18181B;
+  transition: transform 0.1s;
+}
+
+.closeButton:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px 0px #18181B;
+}
+
+.scrollView {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.imageContainer {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  overflow: hidden;
+}
+
+.eventImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-bottom: 3px solid #18181B;
+}
+
+.statusBadge {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background-color: #E5E7EB;
+  border: 2px solid #18181B;
+  box-shadow: 3px 3px 0px 0px #18181B;
+  transform: rotate(3deg);
+}
+
+.statusBadgeLive {
+  background-color: #EF4444;
+}
+
+.statusText {
+  font-size: 14px;
+  font-weight: 800;
+  color: #18181B;
+}
+
+.statusTextLive {
+  color: #FFFFFF;
+}
+
+.content {
+  padding: 20px;
+}
+
+.mintedCard {
+  background-color: #E9D5FF;
+  padding: 20px;
+  border-radius: 20px;
+  border: 3px solid #18181B;
+  box-shadow: 5px 5px 0px 0px #18181B;
+  margin-bottom: 20px;
+  transform: rotate(-1deg);
+}
+
+.mintedHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.mintedEmoji {
+  font-size: 20px;
+}
+
+.mintedTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #52525B;
+}
+
+.collectorName {
+  font-size: 24px;
+  font-weight: 800;
+  color: #18181B;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.walletAddress {
+  font-size: 12px;
+  font-weight: 600;
+  color: #71717A;
+  font-family: monospace;
+  margin-bottom: 16px;
+}
+
+.mintedDivider {
+  height: 2px;
+  background-color: #18181B;
+  margin: 16px 0;
+}
+
+.mintedDetailsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.mintedDetailsText {
+  font-size: 14px;
+  font-weight: 600;
+  color: #52525B;
+}
+
+.blockchainBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #FFFFFF;
+  padding: 4px 10px;
+  border-radius: 12px;
+  border: 2px solid #18181B;
+}
+
+.blockchainDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background-color: #A78BFA;
+}
+
+.blockchainText {
+  font-size: 12px;
+  font-weight: 800;
+  color: #18181B;
+}
+
+.organizerBadge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #F5F1E8;
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 2px solid #18181B;
+  align-self: flex-start;
+  margin-bottom: 16px;
+}
+
+.organizerIcon {
+  font-size: 18px;
+}
+
+.organizer {
+  font-size: 14px;
+  color: #18181B;
+  font-weight: 700;
+}
+
+.title {
+  font-size: 36px;
+  font-weight: 800;
+  color: #18181B;
+  margin: 0 0 24px 0;
+  line-height: 42px;
+  letter-spacing: -1px;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.detailRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.detailIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background-color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #18181B;
+  color: #18181B;
+  flex-shrink: 0;
+}
+
+.detailText {
+  font-size: 16px;
+  color: #18181B;
+  font-weight: 600;
+  flex: 1;
+}
+
+.descriptionContainer {
+  background-color: #FFFFFF;
+  padding: 20px;
+  border-radius: 20px;
+  border: 3px solid #18181B;
+  box-shadow: 4px 4px 0px 0px #18181B;
+  margin-bottom: 24px;
+}
+
+.descriptionTitle {
+  font-size: 20px;
+  font-weight: 800;
+  color: #18181B;
+  margin: 0 0 12px 0;
+}
+
+.description {
+  font-size: 16px;
+  color: #52525B;
+  line-height: 24px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.attendingBadge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #DCFCE7;
+  padding: 16px;
+  border-radius: 16px;
+  border: 2px solid #18181B;
+  box-shadow: 3px 3px 0px 0px #18181B;
+  margin-bottom: 16px;
+}
+
+.attendingText {
+  font-size: 18px;
+  font-weight: 800;
+  color: #18181B;
+}
+
+.xlmRequiredBadge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #FEF3C7;
+  padding: 16px;
+  border-radius: 16px;
+  border: 2px solid #18181B;
+  box-shadow: 3px 3px 0px 0px #18181B;
+  margin-top: 16px;
+}
+
+.xlmIconSmall {
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  background-color: #FBBF24;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #18181B;
+}
+
+.xlmIconText {
+  font-size: 18px;
+  font-weight: 800;
+  color: #18181B;
+}
+
+.xlmRequiredText {
+  font-size: 14px;
+  font-weight: 800;
+  color: #18181B;
+  flex: 1;
+}
+
+.zkBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #FFFFFF;
+  padding: 6px 10px;
+  border-radius: 12px;
+  border: 2px solid #18181B;
+}
+
+.zkBadgeText {
+  font-size: 12px;
+  font-weight: 800;
+  color: #18181B;
+}
+
+.actionsContainer {
+  padding: 20px;
+  padding-bottom: 24px;
+  border-top: 3px solid #18181B;
+  background-color: #F5F1E8;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 18px;
+  border-radius: 20px;
+  border: 3px solid #18181B;
+  box-shadow: 4px 4px 0px 0px #18181B;
+  cursor: pointer;
+  color: #18181B;
+  transition: transform 0.1s, box-shadow 0.1s;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.actionButton:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px 0px #18181B;
+}
+
+.actionButton:active:not(:disabled) {
+  transform: translate(0, 0);
+  box-shadow: 4px 4px 0px 0px #18181B;
+}
+
+.registerButton {
+  background-color: #A78BFA;
+}
+
+.mintButton {
+  background-color: #FBBF24;
+}
+
+.mintButtonDisabled {
+  background-color: #E5E7EB;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.actionButtonText {
+  letter-spacing: 0.5px;
+}
+
+.secondaryActions {
+  display: flex;
+  gap: 12px;
+}
+
+.secondaryButton {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px;
+  border-radius: 16px;
+  background-color: #FFFFFF;
+  border: 2px solid #18181B;
+  box-shadow: 2px 2px 0px 0px #18181B;
+  cursor: pointer;
+  color: #18181B;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.secondaryButton:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px 0px #18181B;
+}
+
+.secondaryButtonText {
+  font-size: 12px;
+  font-weight: 700;
+  color: #18181B;
+}
+
+.mintModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.mintModalContent {
+  background-color: #F5F1E8;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  border-top: 3px solid #18181B;
+  border-left: 3px solid #18181B;
+  border-right: 3px solid #18181B;
+  padding-bottom: 40px;
+  max-width: 600px;
+  width: 100%;
+}
+
+.mintModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  padding-bottom: 16px;
+  border-bottom: 3px solid #18181B;
+}
+
+.mintModalTitle {
+  font-size: 24px;
+  font-weight: 800;
+  color: #18181B;
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+
+.mintCloseButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background-color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #18181B;
+  cursor: pointer;
+  color: #18181B;
+}
+
+.mintOptionsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 20px;
+  gap: 12px;
+}
+
+.mintOptionCard {
+  width: calc(50% - 6px);
+  aspect-ratio: 1;
+  background-color: #FFFFFF;
+  border-radius: 20px;
+  border: 3px solid #18181B;
+  box-shadow: 4px 4px 0px 0px #18181B;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.mintOptionCard:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px 0px #18181B;
+}
+
+.mintOptionIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 32px;
+  background-color: #A78BFA;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #18181B;
+}
+
+.mintOptionLabel {
+  font-size: 14px;
+  font-weight: 800;
+  color: #18181B;
+  text-align: center;
+}
+

@@ -1,0 +1,138 @@
+.container {
+  min-height: 100vh;
+  background-color: #F5F1E8;
+  padding-bottom: 80px;
+}
+
+.scrollView {
+  flex: 1;
+}
+
+.section {
+  padding: 0 20px;
+  margin-bottom: 36px;
+}
+
+.firstSection {
+  padding-top: 24px;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.titleWithEmoji {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.sectionTitle {
+  font-size: 32px;
+  font-weight: 800;
+  color: #18181B;
+  letter-spacing: -1px;
+  margin: 0;
+}
+
+.decorativeEmoji {
+  font-size: 28px;
+  transform: rotate(12deg);
+}
+
+.seeAllBadge {
+  background-color: #A78BFA;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 2px solid #18181B;
+  box-shadow: 3px 3px 0px 0px #18181B;
+  transform: rotate(2deg);
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.seeAllBadge:hover {
+  transform: rotate(2deg) translate(-1px, -1px);
+  box-shadow: 4px 4px 0px 0px #18181B;
+}
+
+.seeAllButton {
+  font-size: 14px;
+  color: #18181B;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+
+.calendarsScrollView {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  margin: 0 -20px;
+  padding: 0 20px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.calendarsScrollView::-webkit-scrollbar {
+  display: none;
+}
+
+.emptyEventsState {
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #FFFFFF;
+  border-radius: 20px;
+  border: 3px dashed #18181B;
+  box-shadow: 4px 4px 0px 0px #18181B;
+}
+
+.emptyEventsEmoji {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.emptyEventsText {
+  font-size: 16px;
+  color: #71717A;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 24px;
+  line-height: 24px;
+}
+
+.exploreButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #A78BFA;
+  padding: 12px 24px;
+  border-radius: 16px;
+  border: 2px solid #18181B;
+  box-shadow: 3px 3px 0px 0px #18181B;
+  cursor: pointer;
+  color: #18181B;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.exploreButton:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px 0px #18181B;
+}
+
+.exploreButton:active {
+  transform: translate(0, 0);
+  box-shadow: 3px 3px 0px 0px #18181B;
+}
+
+.exploreButtonText {
+  font-size: 16px;
+  font-weight: 800;
+  color: #18181B;
+}
+
