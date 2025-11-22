@@ -1,10 +1,10 @@
 # Meet.XLM
 
-- [Hackathon Submission](https://dorahacks.io/buidl/...)
-- [Demo Video](https://youtube.com/...)
-- [Pitch Deck](https://docs.google.com/presentation/...)
-- [Smart Contract Explorer](https://stellar.expert/explorer/testnet/contract/...)
-- [API Documentation](https://docs.meetxlm.com)
+- [Hackathon Submission](.)
+- [Demo Video](..)
+- [Pitch Deck](.)
+- [Smart Contract Explorer](..)
+- [API Documentation](.)
 
 -----
 
@@ -66,8 +66,8 @@ soroban contract deploy --wasm target/.../meet_xlm.wasm --network testnet --sour
 
 | Phase | Estimated Period | Key Objectives (Interpretation) |
 | :--- | :--- | :--- |
-| **Phase 0: MVP & Validation** | Hackathon (3 Months) | **Core Focus:** Establishing the ZK-Proof/Soroban privacy pipeline. **Milestones:** Preparation for Governance Token + Series A. |
-| **Phase 1: Foundation** | Post-Hackathon (6 Months) | **30 Events Milestone**. Smart Contract Audit (CertiK). Stellar Foundation MOU (for grant metrics). |
+| **Phase 0: MVP** | Hackathon | **Core Focus:** Establishing the ZK-Proof/Soroban privacy pipeline. **Milestones:** Preparation for Governance Token + Series A. |
+| **Phase 1: Foundation & Validation** | Post-Hackathon (6 Months) | **30 Events Milestone**. Smart Contract Audit (CertiK). Stellar Foundation MOU (for grant metrics). |
 | **Phase 2: Scale** | 9 – 12 Months | Launch Public API, NFT Marketplace beta. Focus on **transaction speed optimization** (5-8 seconds). |
 | **Phase 3: Expansion** | 12 – 18 Months | **Multi-chain Bridge**. University Certification Program (Real-World Utility). Data Licensing System and Advanced Analytics. |
 
@@ -86,8 +86,5 @@ soroban contract deploy --wasm target/.../meet_xlm.wasm --network testnet --sour
 
 -----
 
-\<div align="center"\>
 
 **Built with ❤️ for team meet.xlm**
-
-\</div\>
