@@ -1,7 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useEmbeddedWallet, usePrivy, isConnected } from '@privy-io/expo';
 
 interface UserMenuProps {
   onLogout: () => void;
@@ -9,37 +8,14 @@ interface UserMenuProps {
 }
 
 export default function UserMenu({ onLogout, stellarAddress }: UserMenuProps) {
-  const { user } = usePrivy();
-  const wallet = useEmbeddedWallet();
   const [open, setOpen] = useState(false);
   const [stellarBalance, setStellarBalance] = useState<string>('—');
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
 
-  const email = useMemo(() => {
-    const emailAccount = user?.linked_accounts?.find((acc: any) => acc.type === 'email') as { address?: string } | undefined;
-    return emailAccount?.address;
-  }, [user]);
-
-  const displayName = useMemo(() => {
-    const profileName = (user as any)?.first_name || (user as any)?.name;
-    if (profileName) return profileName as string;
-    if (email) return email.split('@')[0];
-    return 'Conectado';
-  }, [user, email]);
-
-  const walletAddress = useMemo(() => {
-    if (isConnected(wallet) && (wallet.provider as any)?.address) {
-      const addr = (wallet.provider as any).address as string;
-      return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
-    }
-    const linkedWallet = user?.linked_accounts?.find(
-      (acc: any) => acc.type === 'wallet' && acc.address
-    ) as { address?: string } | undefined;
-    if (linkedWallet?.address) {
-      return `${linkedWallet.address.slice(0, 6)}…${linkedWallet.address.slice(-4)}`;
-    }
-    return 'Carteira';
-  }, [user, wallet]);
+  // Mock user data
+  const email = 'user@example.com';
+  const displayName = 'User';
+  const walletAddress = stellarAddress ? `${stellarAddress.slice(0, 6)}…${stellarAddress.slice(-4)}` : 'Carteira';
 
   React.useEffect(() => {
     let cancelled = false;
@@ -103,11 +79,6 @@ export default function UserMenu({ onLogout, stellarAddress }: UserMenuProps) {
                   </View>
                   <View style={styles.identity}>
                     <Text style={styles.name} numberOfLines={1}>{displayName}</Text>
-                    {email ? (
-                      <Text style={styles.meta} numberOfLines={1} ellipsizeMode="tail">
-                        {email}
-                      </Text>
-                    ) : null}
                     <Text style={styles.meta}>{walletAddress}</Text>
                   </View>
                   <TouchableOpacity onPress={onLogout} style={styles.logoutButton} activeOpacity={0.8}>

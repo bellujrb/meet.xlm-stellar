@@ -55,11 +55,10 @@ npm run android
 npm run web
 ```
 
-## 🔑 Login com Privy (carteira embutida)
+## 🔑 Autenticação
 
-- Defina `EXPO_PUBLIC_PRIVY_APP_ID` (App ID da aba Basics no dashboard) e `EXPO_PUBLIC_PRIVY_CLIENT_ID` (Client ID da aba Clients) no ambiente ao rodar o app.
-- Opcional: `EXPO_PUBLIC_PRIVY_OAUTH_PROVIDER` (ex.: `google`, `twitter`, `apple`) para escolher o provedor OAuth usado pelo botão de login.
-- O esquema de deep link `meetxlm://privy-auth` já está configurado em `app.json` para completar o fluxo no mobile.
+- O app atualmente usa autenticação mockada para desenvolvimento.
+- Clique no botão "Login (Mocked)" na tela de login para acessar o app.
 
 ## 📱 Estrutura do Projeto
 

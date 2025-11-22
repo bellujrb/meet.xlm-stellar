@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   SafeAreaView,
   View,
@@ -8,100 +8,31 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import {
-  hasError,
-  isConnected,
-  isConnecting,
-  isCreating,
-  isNotCreated,
-  needsRecovery,
-  useEmbeddedWallet,
-  usePrivy,
-} from '@privy-io/expo';
-import { useLogin } from '@privy-io/expo/ui';
 
 interface LoginScreenProps {
+  onLogin: () => void;
   onLogout?: () => void;
 }
 
-export default function LoginScreen({ onLogout }: LoginScreenProps) {
-  const { user, isReady } = usePrivy();
-  const wallet = useEmbeddedWallet();
-  const { login } = useLogin();
-
+export default function LoginScreen({ onLogin, onLogout }: LoginScreenProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    if (isReady && user && isNotCreated(wallet)) {
-      wallet.create();
-    }
-  }, [isReady, user, wallet]);
-
-  const walletStatus = useMemo(() => {
-    if (!user) {
-      return { label: 'Login pending', helper: 'Use the button to sign in with email.', tone: 'muted' as const };
-    }
-    if (isConnected(wallet)) {
-      return {
-        label: 'Wallet ready',
-        helper: 'Wallet connected, ready to sign and participate.',
-        tone: 'success' as const,
-      };
-    }
-    if (isCreating(wallet) || isConnecting(wallet)) {
-      return {
-        label: 'Connecting wallet',
-        helper: 'Creating and syncing your embedded wallet.',
-        tone: 'info' as const,
-      };
-    }
-    if (isNotCreated(wallet)) {
-      return {
-        label: 'Create wallet',
-        helper: "We'll generate a secure wallet once you sign in.",
-        tone: 'warning' as const,
-      };
-    }
-    if (needsRecovery(wallet)) {
-      return {
-        label: 'Recover wallet',
-        helper: 'Complete recovery to continue.',
-        tone: 'danger' as const,
-      };
-    }
-    if (hasError(wallet)) {
-      return {
-        label: 'Error connecting',
-        helper: wallet.error,
-        tone: 'danger' as const,
-      };
-    }
-    return {
-      label: 'Wallet',
-      helper: 'Waiting for status...',
-      tone: 'muted' as const,
-    };
-  }, [user, wallet]);
 
   const handleLogin = useCallback(async () => {
     setErrorMessage(null);
     setIsLoading(true);
     try {
-      await login({
-        loginMethods: ['email'],
-        appearance: {
-          logo: undefined,
-        },
-      });
+      // Simular delay de login
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      onLogin();
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : 'Could not open login.';
+        error instanceof Error ? error.message : 'Could not login.';
       setErrorMessage(message);
     } finally {
       setIsLoading(false);
     }
-  }, [login]);
+  }, [onLogin]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -119,7 +50,7 @@ export default function LoginScreen({ onLogout }: LoginScreenProps) {
         <View style={styles.heroSection}>
           <Text style={styles.heroTitle}>Organize and participate in Stellar events</Text>
           <Text style={styles.heroSubtitle}>
-            Connect with email, choose in modal and go straight to events.
+            Login with mock authentication to access events.
           </Text>
         </View>
 
@@ -142,11 +73,11 @@ export default function LoginScreen({ onLogout }: LoginScreenProps) {
             <Ionicons name="sparkles" size={24} color="#18181B" />
           )}
           <Text style={styles.connectButtonText}>
-            {isLoading ? 'Opening login...' : 'Connect with email'}
+            {isLoading ? 'Logging in...' : 'Login (Mocked)'}
           </Text>
         </TouchableOpacity>
 
-        {onLogout && user ? (
+        {onLogout ? (
           <TouchableOpacity style={styles.secondaryButton} onPress={onLogout} activeOpacity={0.85}>
             <Text style={styles.secondaryButtonText}>Switch account</Text>
           </TouchableOpacity>
@@ -154,8 +85,8 @@ export default function LoginScreen({ onLogout }: LoginScreenProps) {
 
         <View style={styles.statusCard}>
           <Text style={styles.statusLabel}>Status</Text>
-          <Text style={[styles.statusValue, styles[`${walletStatus.tone}Text`]]}>{walletStatus.label}</Text>
-          <Text style={styles.statusHelper}>{walletStatus.helper}</Text>
+          <Text style={[styles.statusValue, styles.successText]}>Ready to login</Text>
+          <Text style={styles.statusHelper}>Click the button above to login with mock authentication.</Text>
         </View>
       </View>
     </SafeAreaView>
