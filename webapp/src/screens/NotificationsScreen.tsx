@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { IoNotifications, IoNotificationsOff, IoLogOutOutline } from 'react-icons/io5';
 import styles from './NotificationsScreen.module.css';
 
@@ -10,7 +10,6 @@ interface NotificationsScreenProps {
 
 export default function NotificationsScreen({
   visible,
-  onClose,
   onLogout,
 }: NotificationsScreenProps) {
   if (!visible) return null;
@@ -39,8 +38,8 @@ export default function NotificationsScreen({
             <p className={styles.emptySubtitle}>
               You will receive notifications about your events here
             </p>
-
-            <div className={styles.infoCards}>
+          </div>
+          <div className={styles.infoCards}>
               <div className={styles.infoCard}>
                 <div className={styles.infoCardIcon}>
                   <span className={styles.infoCardEmoji}>🎉</span>
@@ -71,7 +70,6 @@ export default function NotificationsScreen({
                 </div>
               </div>
             </div>
-          </div>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { IoClose, IoTime, IoLocation, IoCheckmarkCircle, IoPersonAdd, IoCube, IoMail, IoShareSocial, IoEllipsisHorizontal, IoShieldCheckmark } from 'react-icons/io5';
 import styles from './EventDetailsScreen.module.css';
 

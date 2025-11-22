@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { IoSearch, IoAddCircle } from 'react-icons/io5';
+import { useState } from 'react';
+import { IoSearch } from 'react-icons/io5';
 import EventCard from '../components/EventCard';
-import CalendarCard from '../components/CalendarCard';
 import Header from '../components/Header';
 import UserMenu from '../components/UserMenu';
 import { useStellarWallet } from '../hooks/useStellarWallet';
@@ -9,7 +8,7 @@ import BottomNavigation from '../components/BottomNavigation';
 import SuccessModal from '../components/SuccessModal';
 import ZKProofModal from '../components/ZKProofModal';
 import RegisterSuccessModal from '../components/RegisterSuccessModal';
-import { MOCK_EVENTS, MOCK_CALENDARS, AVAILABLE_EVENTS } from '../data/mockData';
+// Mock data removed - will be replaced with API calls
 import { TabName, Event } from '../types';
 import styles from './HomeScreen.module.css';
 import SearchScreen from './SearchScreen';
@@ -34,26 +33,20 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
   const [showZKProof, setShowZKProof] = useState(false);
   const [showRegisterSuccess, setShowRegisterSuccess] = useState(false);
   const [selectedEventForRegister, setSelectedEventForRegister] = useState<Event | null>(null);
-  const { publicKey: stellarAddress } = useStellarWallet(true);
+  const { publicKey: stellarAddress, disconnect } = useStellarWallet(true);
 
-  const confirmedEvents = MOCK_EVENTS.filter(
-    (event) => event.id === '1' || event.id === '2'
-  );
+  // TODO: Replace with API call to fetch user's confirmed events
+  const confirmedEvents: Event[] = [];
 
-  const handleEventPress = (eventId: string) => {
-    const event = MOCK_EVENTS.find((e) => e.id === eventId);
-    if (event) {
-      setSelectedEvent(event);
-      setShowEventDetails(true);
-    }
+  const handleEventPress = (event: Event) => {
+    setSelectedEvent(event);
+    setShowEventDetails(true);
   };
 
-  const handleCalendarPress = (calendarId: string) => {
-    alert(`You clicked on calendar ${calendarId}`);
-  };
 
-  const handleLogoutPress = () => {
+  const handleLogoutPress = async () => {
     if (confirm('Are you sure you want to disconnect your wallet?')) {
+      await disconnect();
       onLogout();
     }
   };
@@ -149,7 +142,7 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
                   image={event.image}
                   status={event.status}
                   statusTime={event.statusTime}
-                  onPress={() => handleEventPress(event.id)}
+                  onPress={() => handleEventPress(event)}
                   confirmed={true}
                 />
               ))
@@ -185,14 +178,15 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
             </div>
 
             <div className={styles.calendarsScrollView}>
-              {MOCK_CALENDARS.map((calendar) => (
-                <CalendarCard
-                  key={calendar.id}
-                  name={calendar.name}
-                  image={calendar.image}
-                  onPress={() => handleCalendarPress(calendar.id)}
-                />
-              ))}
+              {/* TODO: Replace with API call to fetch user's calendars */}
+              {confirmedEvents.length === 0 && (
+                <div className={styles.emptyEventsState}>
+                  <div className={styles.emptyEventsEmoji}>📅</div>
+                  <p className={styles.emptyEventsText}>
+                    No collections yet
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -206,7 +200,7 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
             setActiveTab('home');
           }}
           onEventPress={handleSearchEventPress}
-          availableEvents={AVAILABLE_EVENTS}
+          availableEvents={[]}
           onLogout={handleLogoutPress}
         />
       ) : currentScreen === 'notifications' ? (
@@ -266,28 +260,12 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
           visible={showEventDetails}
           onClose={() => setShowEventDetails(false)}
           event={selectedEvent}
-          isMinted={selectedEvent.id === '1' || selectedEvent.id === '2'}
+          isMinted={false}
           isRegistered={selectedEvent.isRegistered || false}
           requiresXLM={selectedEvent.requiresXLM || false}
           xlmMinimum={selectedEvent.xlmMinimum}
           onRegister={() => handleRegister(selectedEvent)}
-          mintInfo={
-            selectedEvent.id === '1'
-              ? {
-                  collector: 'bellu.xlm',
-                  walletAddress: '0x1146dda2581e43802c201155bd6d4ae6bc59eea0',
-                  mintedDate: '16 hours ago',
-                  blockchain: 'Stellar',
-                }
-              : selectedEvent.id === '2'
-              ? {
-                  collector: 'crypto.stars',
-                  walletAddress: '0xabcd1234ef5678901234567890abcdef12345678',
-                  mintedDate: '2 days ago',
-                  blockchain: 'Stellar',
-                }
-              : undefined
-          }
+          mintInfo={undefined}
         />
       )}
     </div>

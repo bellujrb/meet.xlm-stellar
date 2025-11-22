@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { IoClose, IoCheckmarkCircle, IoShieldCheckmark, IoArrowForward } from 'react-icons/io5';
 import styles from './RegisterSuccessModal.module.css';
 

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { IoClose, IoShieldCheckmark, IoLockClosed, IoFlash, IoKey, IoCheckmark, IoArrowForward } from 'react-icons/io5';
+import { useState, useEffect } from 'react';
+import { IoClose, IoShieldCheckmark, IoLockClosed, IoFlash, IoKey, IoCheckmark, IoArrowForward, IoCheckmarkCircle } from 'react-icons/io5';
 import styles from './ZKProofModal.module.css';
 
 interface ZKProofModalProps {

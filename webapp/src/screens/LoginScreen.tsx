@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { IoSparkles } from 'react-icons/io5';
+import { useStellarWallet } from '../hooks/useStellarWallet';
 import styles from './LoginScreen.module.css';
 
 interface LoginScreenProps {
@@ -9,19 +10,23 @@ interface LoginScreenProps {
 
 export default function LoginScreen({ onLogin, onLogout }: LoginScreenProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const { connect, isLoading, error, publicKey, isConnected } = useStellarWallet(true);
+
+  // Auto-login if already connected
+  useEffect(() => {
+    if (isConnected && publicKey) {
+      onLogin();
+    }
+  }, [isConnected, publicKey, onLogin]);
 
   const handleLogin = async () => {
     setErrorMessage(null);
-    setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      onLogin();
+      await connect();
+      // onLogin will be called automatically via useEffect when publicKey is set
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Could not login.';
+      const message = error instanceof Error ? error.message : 'Could not connect to wallet.';
       setErrorMessage(message);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -41,13 +46,13 @@ export default function LoginScreen({ onLogin, onLogout }: LoginScreenProps) {
         <div className={styles.heroSection}>
           <h2 className={styles.heroTitle}>Organize and participate in Stellar events</h2>
           <p className={styles.heroSubtitle}>
-            Login with mock authentication to access events.
+            Connect your Stellar wallet to access events.
           </p>
         </div>
 
-        {errorMessage && (
+        {(errorMessage || error) && (
           <div className={styles.alertBox}>
-            <span className={styles.alertText}>{errorMessage}</span>
+            <span className={styles.alertText}>{errorMessage || error?.message || 'Connection error'}</span>
           </div>
         )}
 
@@ -62,7 +67,7 @@ export default function LoginScreen({ onLogin, onLogout }: LoginScreenProps) {
             <IoSparkles size={24} />
           )}
           <span className={styles.connectButtonText}>
-            {isLoading ? 'Logging in...' : 'Login (Mocked)'}
+            {isLoading ? 'Connecting...' : 'Connect Wallet'}
           </span>
         </button>
 
@@ -74,9 +79,13 @@ export default function LoginScreen({ onLogin, onLogout }: LoginScreenProps) {
 
         <div className={styles.statusCard}>
           <div className={styles.statusLabel}>Status</div>
-          <div className={`${styles.statusValue} ${styles.successText}`}>Ready to login</div>
+          <div className={`${styles.statusValue} ${publicKey ? styles.successText : ''}`}>
+            {publicKey ? 'Connected' : 'Ready to connect'}
+          </div>
           <div className={styles.statusHelper}>
-            Click the button above to login with mock authentication.
+            {publicKey 
+              ? `Connected: ${publicKey.slice(0, 8)}...${publicKey.slice(-8)}`
+              : 'Click the button above to connect your Stellar wallet.'}
           </div>
         </div>
       </div>

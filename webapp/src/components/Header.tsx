@@ -1,5 +1,5 @@
 import React from 'react';
-import { IoMdSettings, IoMdLogOut } from 'react-icons/io';
+import { IoMdLogOut } from 'react-icons/io';
 import styles from './Header.module.css';
 
 interface HeaderProps {
