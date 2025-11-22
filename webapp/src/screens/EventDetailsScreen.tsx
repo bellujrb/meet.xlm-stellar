@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { IoClose, IoTime, IoLocation, IoCheckmarkCircle, IoPersonAdd, IoCube, IoMail, IoShareSocial, IoEllipsisHorizontal, IoShieldCheckmark } from 'react-icons/io5';
+import { IoClose, IoTime, IoLocation, IoCheckmarkCircle, IoPersonAdd, IoCube, IoMail, IoShareSocial, IoEllipsisHorizontal, IoShieldCheckmark, IoLocationOutline, IoWifi, IoKey, IoQrCodeOutline, IoKeypad } from 'react-icons/io5';
 import { DEFAULT_EVENT_IMAGE } from '../config/constants';
 import styles from './EventDetailsScreen.module.css';
 
@@ -31,11 +31,11 @@ interface EventDetailsScreenProps {
 }
 
 const MINT_OPTIONS = [
-  { id: 'location', label: 'Location', icon: 'location' },
-  { id: 'nfc', label: 'NFC', icon: 'wifi' },
-  { id: 'secret', label: 'Secret Word', icon: 'key' },
-  { id: 'qrcode', label: 'Scan QRCode', icon: 'qr-code' },
-  { id: 'code', label: 'Enter Code', icon: 'keypad' },
+  { id: 'location', label: 'Location', icon: IoLocationOutline },
+  { id: 'nfc', label: 'NFC', icon: IoWifi },
+  { id: 'secret', label: 'Secret Word', icon: IoKey },
+  { id: 'qrcode', label: 'Scan QRCode', icon: IoQrCodeOutline },
+  { id: 'code', label: 'Enter Code', icon: IoKeypad },
 ];
 
 export default function EventDetailsScreen({
@@ -228,18 +228,21 @@ export default function EventDetailsScreen({
               </div>
 
               <div className={styles.mintOptionsGrid}>
-                {MINT_OPTIONS.map((option) => (
-                  <button
-                    key={option.id}
-                    className={styles.mintOptionCard}
-                    onClick={() => handleMintOption(option.label)}
-                  >
-                    <div className={styles.mintOptionIcon}>
-                      <span>{option.icon}</span>
-                    </div>
-                    <span className={styles.mintOptionLabel}>{option.label}</span>
-                  </button>
-                ))}
+                {MINT_OPTIONS.map((option) => {
+                  const IconComponent = option.icon;
+                  return (
+                    <button
+                      key={option.id}
+                      className={styles.mintOptionCard}
+                      onClick={() => handleMintOption(option.label)}
+                    >
+                      <div className={styles.mintOptionIcon}>
+                        <IconComponent size={24} />
+                      </div>
+                      <span className={styles.mintOptionLabel}>{option.label}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
