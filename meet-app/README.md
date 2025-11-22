@@ -55,6 +55,12 @@ npm run android
 npm run web
 ```
 
+## 🔑 Login com Privy (carteira embutida)
+
+- Defina `EXPO_PUBLIC_PRIVY_APP_ID` (App ID da aba Basics no dashboard) e `EXPO_PUBLIC_PRIVY_CLIENT_ID` (Client ID da aba Clients) no ambiente ao rodar o app.
+- Opcional: `EXPO_PUBLIC_PRIVY_OAUTH_PROVIDER` (ex.: `google`, `twitter`, `apple`) para escolher o provedor OAuth usado pelo botão de login.
+- O esquema de deep link `meetxlm://privy-auth` já está configurado em `app.json` para completar o fluxo no mobile.
+
 ## 📱 Estrutura do Projeto
 
 ```
@@ -148,4 +154,3 @@ Este projeto está sob a licença MIT.
 ## 👥 Time
 
 Desenvolvido para o Stellar Hack+ Buenos Aires 2024
-

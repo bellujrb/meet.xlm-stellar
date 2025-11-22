@@ -30,7 +30,7 @@ export default function NotificationsScreen({
           <View style={styles.headerIcon}>
             <Ionicons name="notifications" size={24} color="#18181B" />
           </View>
-          <Text style={styles.headerTitle}>Notificações</Text>
+          <Text style={styles.headerTitle}>Notifications</Text>
         </View>
         <TouchableOpacity onPress={onLogout} style={styles.closeButton}>
           <Ionicons name="log-out-outline" size={24} color="#18181B" />
@@ -44,9 +44,9 @@ export default function NotificationsScreen({
             <View style={styles.emptyIconContainer}>
               <Ionicons name="notifications-off" size={80} color="#A78BFA" />
             </View>
-            <Text style={styles.emptyTitle}>Nenhuma notificação</Text>
+            <Text style={styles.emptyTitle}>No notifications</Text>
             <Text style={styles.emptySubtitle}>
-              Você receberá notificações sobre seus eventos aqui
+              You will receive notifications about your events here
             </Text>
 
             {/* Info Cards */}
@@ -55,9 +55,9 @@ export default function NotificationsScreen({
                 <View style={styles.infoCardIcon}>
                   <Text style={styles.infoCardEmoji}>🎉</Text>
                 </View>
-                <Text style={styles.infoCardTitle}>Eventos</Text>
+                <Text style={styles.infoCardTitle}>Events</Text>
                 <Text style={styles.infoCardText}>
-                  Lembretes de eventos próximos
+                  Upcoming event reminders
                 </Text>
               </View>
 
@@ -67,7 +67,7 @@ export default function NotificationsScreen({
                 </View>
                 <Text style={styles.infoCardTitle}>POAPs</Text>
                 <Text style={styles.infoCardText}>
-                  Novos POAPs disponíveis
+                  New POAPs available
                 </Text>
               </View>
 
@@ -75,9 +75,9 @@ export default function NotificationsScreen({
                 <View style={styles.infoCardIcon}>
                   <Text style={styles.infoCardEmoji}>✨</Text>
                 </View>
-                <Text style={styles.infoCardTitle}>Atualizações</Text>
+                <Text style={styles.infoCardTitle}>Updates</Text>
                 <Text style={styles.infoCardText}>
-                  Mudanças nos seus eventos
+                  Changes to your events
                 </Text>
               </View>
             </View>

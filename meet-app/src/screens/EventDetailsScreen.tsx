@@ -62,25 +62,25 @@ export default function EventDetailsScreen({
 
   const handleMintOption = (option: string) => {
     setShowMintOptions(false);
-    Alert.alert('Mint', `Você selecionou: ${option}`);
+    Alert.alert('Mint', `You selected: ${option}`);
   };
 
   const handlePrimaryAction = () => {
     if (isMinted) {
-      Alert.alert('Já Coletado', 'Você já mintou este POAP! ✨');
+      Alert.alert('Already Collected', 'You have already minted this POAP! ✨');
     } else if (!isRegistered) {
-      // Precisa se registrar primeiro
+      // Need to register first
       onRegister?.();
       onClose();
     } else {
-      // Já registrado, pode mintar
+      // Already registered, can mint
       setShowMintOptions(true);
     }
   };
 
   const getPrimaryButtonText = () => {
-    if (isMinted) return 'Já Coletado ✨';
-    if (!isRegistered) return 'Registrar';
+    if (isMinted) return 'Already Collected ✨';
+    if (!isRegistered) return 'Register';
     return 'Mint';
   };
 
@@ -91,15 +91,15 @@ export default function EventDetailsScreen({
   };
 
   const handleContact = () => {
-    Alert.alert('Contato', 'Abrir informações de contato');
+    Alert.alert('Contact', 'Open contact information');
   };
 
   const handleShare = () => {
-    Alert.alert('Compartilhar', 'Compartilhar evento');
+    Alert.alert('Share', 'Share event');
   };
 
   const handleMore = () => {
-    Alert.alert('Mais', 'Mais opções');
+    Alert.alert('More', 'More options');
   };
 
   return (
@@ -199,7 +199,7 @@ export default function EventDetailsScreen({
             {/* Description */}
             {event.description && (
               <View style={styles.descriptionContainer}>
-                <Text style={styles.descriptionTitle}>Sobre o Evento ✨</Text>
+                <Text style={styles.descriptionTitle}>About the Event ✨</Text>
                 <Text style={styles.description}>{event.description}</Text>
               </View>
             )}
@@ -208,7 +208,7 @@ export default function EventDetailsScreen({
             {isRegistered && (
               <View style={styles.attendingBadge}>
                 <Ionicons name="checkmark-circle" size={24} color="#4ADE80" />
-                <Text style={styles.attendingText}>Você Vai</Text>
+                <Text style={styles.attendingText}>You're Going</Text>
               </View>
             )}
 
@@ -219,7 +219,7 @@ export default function EventDetailsScreen({
                   <Text style={styles.xlmIconText}>$</Text>
                 </View>
                 <Text style={styles.xlmRequiredText}>
-                  Requer {xlmMinimum} XLM mínimo
+                  Requires {xlmMinimum} XLM minimum
                 </Text>
                 <View style={styles.zkBadge}>
                   <Ionicons name="shield-checkmark" size={16} color="#18181B" />
@@ -264,7 +264,7 @@ export default function EventDetailsScreen({
               activeOpacity={0.8}
             >
               <Ionicons name="mail" size={20} color="#18181B" />
-              <Text style={styles.secondaryButtonText}>Contato</Text>
+              <Text style={styles.secondaryButtonText}>Contact</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -273,7 +273,7 @@ export default function EventDetailsScreen({
               activeOpacity={0.8}
             >
               <Ionicons name="share-social" size={20} color="#18181B" />
-              <Text style={styles.secondaryButtonText}>Compartilhar</Text>
+              <Text style={styles.secondaryButtonText}>Share</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -282,7 +282,7 @@ export default function EventDetailsScreen({
               activeOpacity={0.8}
             >
               <Ionicons name="ellipsis-horizontal" size={20} color="#18181B" />
-              <Text style={styles.secondaryButtonText}>Mais</Text>
+              <Text style={styles.secondaryButtonText}>More</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -297,7 +297,7 @@ export default function EventDetailsScreen({
           <View style={styles.mintModalOverlay}>
             <View style={styles.mintModalContent}>
               <View style={styles.mintModalHeader}>
-                <Text style={styles.mintModalTitle}>Escolha o Método 🎯</Text>
+                <Text style={styles.mintModalTitle}>Choose Method 🎯</Text>
                 <TouchableOpacity
                   onPress={() => setShowMintOptions(false)}
                   style={styles.mintCloseButton}

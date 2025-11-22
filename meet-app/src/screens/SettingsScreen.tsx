@@ -32,15 +32,15 @@ export default function SettingsScreen({
 
   const handleCopyAddress = () => {
     Clipboard.setString(FULL_WALLET_ADDRESS);
-    Alert.alert('Copiado! 📋', 'Endereço copiado para área de transferência');
+    Alert.alert('Copied! 📋', 'Address copied to clipboard');
   };
 
   const handleGenerateQR = () => {
-    Alert.alert('QR Code 📱', 'Gerando QR Code da sua carteira...');
+    Alert.alert('QR Code 📱', 'Generating your wallet QR Code...');
   };
 
   const handleSetENS = () => {
-    Alert.alert('ENS 🌟', 'Configure seu nome ENS');
+    Alert.alert('ENS 🌟', 'Configure your ENS name');
   };
 
 
@@ -104,7 +104,7 @@ export default function SettingsScreen({
           <View style={styles.menuSection}>
             <TouchableOpacity
               style={styles.menuItem}
-              onPress={() => Alert.alert('FAQ', 'Perguntas frequentes')}
+              onPress={() => Alert.alert('FAQ', 'Frequently asked questions')}
               activeOpacity={0.8}
             >
               <Text style={styles.menuItemText}>FAQ</Text>
@@ -113,7 +113,7 @@ export default function SettingsScreen({
 
             <TouchableOpacity
               style={styles.menuItem}
-              onPress={() => Alert.alert('Notificações', 'Configurar notificações push')}
+              onPress={() => Alert.alert('Notifications', 'Configure push notifications')}
               activeOpacity={0.8}
             >
               <Text style={styles.menuItemText}>Push Notifications</Text>
@@ -126,7 +126,7 @@ export default function SettingsScreen({
             <View style={styles.feedbackContent}>
               <TouchableOpacity
                 style={styles.feedbackButton}
-                onPress={() => Alert.alert('Feedback', 'Envie seu feedback para nós!')}
+                onPress={() => Alert.alert('Feedback', 'Send us your feedback!')}
                 activeOpacity={0.8}
               >
                 <Text style={styles.feedbackButtonText}>Send your feedback</Text>
@@ -144,7 +144,7 @@ export default function SettingsScreen({
               <TouchableOpacity
                 onPress={() => {
                   Clipboard.setString(UUID);
-                  Alert.alert('Copiado!', 'UUID copiado');
+                  Alert.alert('Copied!', 'UUID copied');
                 }}
               >
                 <Ionicons name="copy-outline" size={16} color="#71717A" />

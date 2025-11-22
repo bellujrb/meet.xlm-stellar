@@ -5,9 +5,10 @@ import { styles } from '../styles/components/Header.styles';
 
 interface HeaderProps {
   onSettingsPress?: () => void;
+  rightComponent?: React.ReactNode;
 }
 
-export default function Header({ onSettingsPress }: HeaderProps) {
+export default function Header({ onSettingsPress, rightComponent }: HeaderProps) {
   return (
     <View style={styles.header}>
       <View style={styles.logoContainer}>
@@ -18,15 +19,18 @@ export default function Header({ onSettingsPress }: HeaderProps) {
         </View>
         <Text style={styles.logo}>Meet.XLM</Text>
       </View>
-      <TouchableOpacity 
-        style={styles.settingsButton}
-        onPress={onSettingsPress}
-      >
-        <View style={styles.settingsIconContainer}>
-          <Ionicons name="log-out-outline" size={22} color="#18181B" />
-        </View>
-      </TouchableOpacity>
+      {rightComponent ? (
+        rightComponent
+      ) : (
+        <TouchableOpacity 
+          style={styles.settingsButton}
+          onPress={onSettingsPress}
+        >
+          <View style={styles.settingsIconContainer}>
+            <Ionicons name="log-out-outline" size={22} color="#18181B" />
+          </View>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
-

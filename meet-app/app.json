@@ -2,6 +2,7 @@
   "expo": {
     "name": "meet-app",
     "slug": "meet-app",
+    "scheme": "meetxlm",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,9 +14,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.meetxlm.app"
     },
     "android": {
+      "package": "com.meetxlm.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"

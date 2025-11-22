@@ -13,6 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 import EventCard from '../components/EventCard';
 import CalendarCard from '../components/CalendarCard';
 import Header from '../components/Header';
+import UserMenu from '../components/UserMenu';
+import { useStellarWallet } from '../hooks/useStellarWallet';
 import BottomNavigation from '../components/BottomNavigation';
 import EventDetailsScreen from './EventDetailsScreen';
 import CreateEventScreen from './CreateEventScreen';
@@ -25,7 +27,11 @@ import RegisterSuccessModal from '../components/RegisterSuccessModal';
 import { MOCK_EVENTS, MOCK_CALENDARS, AVAILABLE_EVENTS } from '../data/mockData';
 import { TabName, Event } from '../types';
 
-export default function HomeScreen() {
+interface HomeScreenProps {
+  onLogout: () => void;
+}
+
+export default function HomeScreen({ onLogout }: HomeScreenProps) {
   const [activeTab, setActiveTab] = useState<TabName>('home');
   const [currentScreen, setCurrentScreen] = useState<'home' | 'search' | 'notifications' | 'settings'>('home');
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -37,8 +43,9 @@ export default function HomeScreen() {
   const [showZKProof, setShowZKProof] = useState(false);
   const [showRegisterSuccess, setShowRegisterSuccess] = useState(false);
   const [selectedEventForRegister, setSelectedEventForRegister] = useState<Event | null>(null);
+  const { publicKey: stellarAddress } = useStellarWallet(true);
 
-  // Filtra apenas eventos confirmados para a home
+  // Filter only confirmed events for home
   const confirmedEvents = MOCK_EVENTS.filter(
     (event) => event.id === '1' || event.id === '2'
   );
@@ -52,19 +59,19 @@ export default function HomeScreen() {
   };
 
   const handleCalendarPress = (calendarId: string) => {
-    Alert.alert('Calendário', `Você clicou no calendário ${calendarId}`);
+    Alert.alert('Calendar', `You clicked on calendar ${calendarId}`);
   };
 
   const handleLogoutPress = () => {
     Alert.alert(
-      'Desconectar',
-      'Tem certeza que deseja desconectar sua carteira?',
+      'Disconnect',
+      'Are you sure you want to disconnect your wallet?',
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Desconectar',
+          text: 'Disconnect',
           style: 'destructive',
-          onPress: () => Alert.alert('Desconectado', 'Até logo! 👋'),
+          onPress: onLogout,
         },
       ]
     );
@@ -130,21 +137,27 @@ export default function HomeScreen() {
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           <Header 
             onSettingsPress={handleLogoutPress}
+            rightComponent={
+              <UserMenu
+                onLogout={handleLogoutPress}
+                stellarAddress={stellarAddress || undefined}
+              />
+            }
           />
 
-        {/* Seus Eventos Section */}
+        {/* Your Events Section */}
         <View style={[styles.section, styles.firstSection]}>
           <View style={styles.sectionHeader}>
             <View style={styles.titleWithEmoji}>
-              <Text style={styles.sectionTitle}>Seus Eventos</Text>
+              <Text style={styles.sectionTitle}>Your Events</Text>
               <Text style={styles.decorativeEmoji}>🎉</Text>
             </View>
             <TouchableOpacity 
-              onPress={() => Alert.alert('Ver Todos', 'Carregando todos os eventos...')}
+              onPress={() => Alert.alert('See All', 'Loading all events...')}
               style={styles.seeAllBadge}
               activeOpacity={0.7}
             >
-              <Text style={styles.seeAllButton}>Ver Todos ›</Text>
+              <Text style={styles.seeAllButton}>See All ›</Text>
             </TouchableOpacity>
           </View>
 
@@ -168,7 +181,7 @@ export default function HomeScreen() {
             <View style={styles.emptyEventsState}>
               <Text style={styles.emptyEventsEmoji}>🎫</Text>
               <Text style={styles.emptyEventsText}>
-                Você ainda não confirmou presença em nenhum evento
+                You haven't confirmed attendance at any events yet
               </Text>
               <TouchableOpacity
                 style={styles.exploreButton}
@@ -176,24 +189,24 @@ export default function HomeScreen() {
                 activeOpacity={0.8}
               >
                 <Ionicons name="search" size={20} color="#18181B" />
-                <Text style={styles.exploreButtonText}>Explorar Eventos</Text>
+                <Text style={styles.exploreButtonText}>Explore Events</Text>
               </TouchableOpacity>
             </View>
           )}
         </View>
 
-        {/* Seus Calendários Section */}
+        {/* Your Collections Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <View style={styles.titleWithEmoji}>
-              <Text style={styles.sectionTitle}>Suas Colleções</Text>
+              <Text style={styles.sectionTitle}>Your Collections</Text>
               <Text style={styles.decorativeEmoji}>📅</Text>
             </View>
             <TouchableOpacity 
-              onPress={() => Alert.alert('Ver Todos', 'Carregando todas as coleções...')}
+              onPress={() => Alert.alert('See All', 'Loading all collections...')}
               style={styles.seeAllBadge}
             >
-              <Text style={styles.seeAllButton}>Ver Todos ›</Text>
+              <Text style={styles.seeAllButton}>See All ›</Text>
             </TouchableOpacity>
           </View>
 
@@ -451,4 +464,3 @@ const styles = StyleSheet.create({
     color: '#18181B',
   },
 });
-

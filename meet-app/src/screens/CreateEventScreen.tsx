@@ -64,17 +64,17 @@ export default function CreateEventScreen({
     let hasError = false;
     
     if (!eventName.trim()) {
-      newErrors.eventName = 'Nome do evento é obrigatório';
+      newErrors.eventName = 'Event name is required';
       hasError = true;
     }
     
     if (!startDate) {
-      newErrors.startDate = 'Data de início é obrigatória';
+      newErrors.startDate = 'Start date is required';
       hasError = true;
     }
     
     if (!location.trim()) {
-      newErrors.location = 'Localização é obrigatória';
+      newErrors.location = 'Location is required';
       hasError = true;
     }
 
@@ -84,7 +84,7 @@ export default function CreateEventScreen({
       return;
     }
 
-    // Chama callback de sucesso
+    // Call success callback
     onSuccess(eventName, formatDate(startDate));
     
     // Reset form
@@ -97,7 +97,7 @@ export default function CreateEventScreen({
     setXlmAmount('');
     setErrors({ eventName: '', startDate: '', location: '' });
     
-    // Fecha o modal
+    // Close modal
     onClose();
   };
 
@@ -109,7 +109,7 @@ export default function CreateEventScreen({
         setErrors({ ...errors, startDate: '' });
       }
     } else {
-      // iOS - apenas atualiza a data
+      // iOS - only update date
       if (selectedDate) {
         setStartDate(selectedDate);
         setErrors({ ...errors, startDate: '' });
@@ -124,7 +124,7 @@ export default function CreateEventScreen({
         setEndDate(selectedDate);
       }
     } else {
-      // iOS - apenas atualiza a data
+      // iOS - only update date
       if (selectedDate) {
         setEndDate(selectedDate);
       }
@@ -163,7 +163,7 @@ export default function CreateEventScreen({
 
   const formatDate = (date: Date | null) => {
     if (!date) return '';
-    return date.toLocaleDateString('pt-BR', {
+    return date.toLocaleDateString('en-US', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -186,7 +186,7 @@ export default function CreateEventScreen({
             <View style={styles.headerIcon}>
               <Text style={styles.headerEmoji}>✨</Text>
             </View>
-            <Text style={styles.headerTitle}>Criar Evento</Text>
+            <Text style={styles.headerTitle}>Create Event</Text>
           </View>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <Ionicons name="close" size={28} color="#18181B" />
@@ -201,14 +201,14 @@ export default function CreateEventScreen({
                 <View style={styles.imageIcon}>
                   <Ionicons name="image" size={48} color="#18181B" />
                 </View>
-                <Text style={styles.imagePlaceholderText}>Adicionar Capa</Text>
-                <Text style={styles.imagePlaceholderSubtext}>Clique para adicionar uma imagem</Text>
+                <Text style={styles.imagePlaceholderText}>Add Cover</Text>
+                <Text style={styles.imagePlaceholderSubtext}>Tap to add an image</Text>
               </View>
             </TouchableOpacity>
 
-            {/* Nome do Evento */}
+            {/* Event Name */}
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Nome do Evento ✨</Text>
+              <Text style={styles.label}>Event Name ✨</Text>
               <TextInput
                 style={[styles.input, errors.eventName && styles.inputError]}
                 placeholder="Ex: Stellar Hack+ Buenos Aires"
@@ -227,10 +227,10 @@ export default function CreateEventScreen({
               ) : null}
             </View>
 
-            {/* Datas */}
+            {/* Dates */}
             <View style={styles.dateRow}>
               <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={styles.label}>Início 🕐</Text>
+                <Text style={styles.label}>Start 🕐</Text>
                 <TouchableOpacity
                   style={[styles.dateInput, errors.startDate && styles.inputError]}
                   onPress={() => setShowStartPicker(true)}
@@ -243,7 +243,7 @@ export default function CreateEventScreen({
                       !startDate && styles.dateInputPlaceholder,
                     ]}
                   >
-                    {startDate ? formatDate(startDate) : 'Escolher data'}
+                    {startDate ? formatDate(startDate) : 'Choose date'}
                   </Text>
                 </TouchableOpacity>
                 {errors.startDate ? (
@@ -255,7 +255,7 @@ export default function CreateEventScreen({
               </View>
 
               <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={styles.label}>Fim 🕐</Text>
+                <Text style={styles.label}>End 🕐</Text>
                 <TouchableOpacity
                   style={styles.dateInput}
                   onPress={() => setShowEndPicker(true)}
@@ -268,7 +268,7 @@ export default function CreateEventScreen({
                       !endDate && styles.dateInputPlaceholder,
                     ]}
                   >
-                    {endDate ? formatDate(endDate) : 'Opcional'}
+                    {endDate ? formatDate(endDate) : 'Optional'}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -285,7 +285,7 @@ export default function CreateEventScreen({
                   <View style={styles.datePickerContainer}>
                     <View style={styles.datePickerHeader}>
                       <Text style={styles.datePickerTitle}>
-                        Escolher Data de Início 🕐
+                        Choose Start Date 🕐
                       </Text>
                       <TouchableOpacity
                         onPress={() => setShowStartPicker(false)}
@@ -307,7 +307,7 @@ export default function CreateEventScreen({
                       onPress={confirmStartDate}
                       activeOpacity={0.8}
                     >
-                      <Text style={styles.datePickerConfirmText}>Confirmar</Text>
+                      <Text style={styles.datePickerConfirmText}>Confirm</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -325,7 +325,7 @@ export default function CreateEventScreen({
                   <View style={styles.datePickerContainer}>
                     <View style={styles.datePickerHeader}>
                       <Text style={styles.datePickerTitle}>
-                        Escolher Data de Fim 🕐
+                        Choose End Date 🕐
                       </Text>
                       <TouchableOpacity
                         onPress={() => setShowEndPicker(false)}
@@ -347,7 +347,7 @@ export default function CreateEventScreen({
                       onPress={confirmEndDate}
                       activeOpacity={0.8}
                     >
-                      <Text style={styles.datePickerConfirmText}>Confirmar</Text>
+                      <Text style={styles.datePickerConfirmText}>Confirm</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -374,14 +374,14 @@ export default function CreateEventScreen({
               />
             )}
 
-            {/* Localização */}
+            {/* Location */}
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Localização 📍</Text>
+              <Text style={styles.label}>Location 📍</Text>
               <View style={[styles.locationInput, errors.location && styles.inputError]}>
                 <Ionicons name="location" size={20} color="#71717A" />
                 <TextInput
                   style={styles.locationInputText}
-                  placeholder="Digite o endereço..."
+                  placeholder="Enter address..."
                   placeholderTextColor="#71717A"
                   value={location}
                   onChangeText={handleLocationChange}
@@ -419,12 +419,12 @@ export default function CreateEventScreen({
               )}
             </View>
 
-            {/* Descrição */}
+            {/* Description */}
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Descrição 📝</Text>
+              <Text style={styles.label}>Description 📝</Text>
               <TextInput
                 style={[styles.input, styles.textArea]}
-                placeholder="Adicionar Descrição"
+                placeholder="Add Description"
                 placeholderTextColor="#71717A"
                 value={description}
                 onChangeText={setDescription}
@@ -434,10 +434,10 @@ export default function CreateEventScreen({
               />
             </View>
 
-            {/* Ingressos Section */}
+            {/* Tickets Section */}
             <View style={styles.ticketsSection}>
               <View style={styles.sectionHeaderRow}>
-                <Text style={styles.sectionTitle}>Ingressos</Text>
+                <Text style={styles.sectionTitle}>Tickets</Text>
                 <Text style={styles.sectionEmoji}>🎫</Text>
               </View>
 
@@ -448,9 +448,9 @@ export default function CreateEventScreen({
                       <Text style={styles.xlmIconText}>$</Text>
                     </View>
                     <View>
-                      <Text style={styles.xlmRequirementTitle}>Requer XLM Mínimo</Text>
+                      <Text style={styles.xlmRequirementTitle}>Require Minimum XLM</Text>
                       <Text style={styles.xlmRequirementSubtitle}>
-                        Participantes devem ter saldo
+                        Participants must have balance
                       </Text>
                     </View>
                   </View>
@@ -465,7 +465,7 @@ export default function CreateEventScreen({
 
                 {requireXLM && (
                   <View style={styles.xlmAmountContainer}>
-                    <Text style={styles.xlmAmountLabel}>Quantidade mínima</Text>
+                    <Text style={styles.xlmAmountLabel}>Minimum amount</Text>
                     <View style={styles.xlmAmountInputContainer}>
                       <TextInput
                         style={styles.xlmAmountInput}
@@ -486,9 +486,9 @@ export default function CreateEventScreen({
               {/* Price Info */}
               <View style={styles.priceInfo}>
                 <View style={styles.priceRow}>
-                  <Text style={styles.priceLabel}>Preço</Text>
+                  <Text style={styles.priceLabel}>Price</Text>
                   <View style={styles.priceValue}>
-                    <Text style={styles.priceValueText}>Grátis</Text>
+                    <Text style={styles.priceValueText}>Free</Text>
                     <Ionicons name="chevron-forward" size={16} color="#71717A" />
                   </View>
                 </View>
@@ -507,7 +507,7 @@ export default function CreateEventScreen({
             activeOpacity={0.8}
           >
             <Ionicons name="add-circle" size={24} color="#18181B" />
-            <Text style={styles.createButtonText}>Criar Evento</Text>
+            <Text style={styles.createButtonText}>Create Event</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>

@@ -30,7 +30,7 @@ export default function SearchScreen({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
 
-  const cities = ['Todos', 'Buenos Aires', 'São Paulo', 'Online'];
+  const cities = ['All', 'Buenos Aires', 'São Paulo', 'Online'];
 
   const filteredEvents = availableEvents.filter((event) => {
     const matchesSearch =
@@ -40,7 +40,7 @@ export default function SearchScreen({
 
     const matchesCity =
       !selectedCity ||
-      selectedCity === 'Todos' ||
+      selectedCity === 'All' ||
       event.location.toLowerCase().includes(selectedCity.toLowerCase());
 
     return matchesSearch && matchesCity;
@@ -56,7 +56,7 @@ export default function SearchScreen({
           <View style={styles.headerIcon}>
             <Ionicons name="search" size={24} color="#18181B" />
           </View>
-          <Text style={styles.headerTitle}>Eventos Populares</Text>
+          <Text style={styles.headerTitle}>Popular Events</Text>
         </View>
         <TouchableOpacity onPress={onLogout} style={styles.closeButton}>
           <Ionicons name="log-out-outline" size={24} color="#18181B" />
@@ -70,7 +70,7 @@ export default function SearchScreen({
             <Ionicons name="search" size={20} color="#71717A" />
             <TextInput
               style={styles.searchInput}
-              placeholder="Buscar eventos..."
+              placeholder="Search events..."
               placeholderTextColor="#71717A"
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -85,7 +85,7 @@ export default function SearchScreen({
 
         {/* City Filter */}
         <View style={styles.filterSection}>
-          <Text style={styles.filterLabel}>Localização 📍</Text>
+          <Text style={styles.filterLabel}>Location 📍</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -117,8 +117,8 @@ export default function SearchScreen({
         {/* Events List */}
         <View style={styles.eventsSection}>
           <Text style={styles.sectionTitle}>
-            {filteredEvents.length} Evento{filteredEvents.length !== 1 ? 's' : ''}{' '}
-            {searchQuery ? `para "${searchQuery}"` : 'Disponíveis'}
+            {filteredEvents.length} Event{filteredEvents.length !== 1 ? 's' : ''}{' '}
+            {searchQuery ? `for "${searchQuery}"` : 'Available'}  
           </Text>
 
           {filteredEvents.length > 0 ? (
@@ -140,9 +140,9 @@ export default function SearchScreen({
           ) : (
             <View style={styles.emptyState}>
               <Text style={styles.emptyEmoji}>🔍</Text>
-              <Text style={styles.emptyText}>Nenhum evento encontrado</Text>
+              <Text style={styles.emptyText}>No events found</Text>
               <Text style={styles.emptySubtext}>
-                Tente buscar por outro termo
+                Try searching for another term
               </Text>
             </View>
           )}
