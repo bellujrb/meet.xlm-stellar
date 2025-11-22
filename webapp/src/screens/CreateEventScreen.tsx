@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { IoClose, IoImage, IoCalendar, IoLocation, IoShieldCheckmark, IoTrash } from 'react-icons/io5';
 import { apiClient } from '../services/api';
 import { useStellarWallet } from '../hooks/useStellarWallet';
+import NotificationModal from '../components/NotificationModal';
 import styles from './CreateEventScreen.module.css';
 
 interface CreateEventScreenProps {
@@ -32,6 +33,12 @@ export default function CreateEventScreen({
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [notification, setNotification] = useState<{ visible: boolean; type: 'success' | 'error' | 'info'; title: string; message: string }>({
+    visible: false,
+    type: 'info',
+    title: '',
+    message: '',
+  });
   const [errors, setErrors] = useState({
     eventName: '',
     startDate: '',
@@ -63,13 +70,23 @@ export default function CreateEventScreen({
     if (file) {
       // Validate file type
       if (!file.type.startsWith('image/')) {
-        alert('Please select an image file');
+        setNotification({
+          visible: true,
+          type: 'error',
+          title: 'Invalid File',
+          message: 'Please select an image file',
+        });
         return;
       }
 
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert('Image size must be less than 5MB');
+        setNotification({
+          visible: true,
+          type: 'error',
+          title: 'File Too Large',
+          message: 'Image size must be less than 5MB',
+        });
         return;
       }
 
@@ -149,9 +166,19 @@ export default function CreateEventScreen({
     if (!finalAddress) {
       if (isConnected) {
         // Wallet is connected but address not available - try to get it
-        alert('Wallet is connected but address is not available. Please try again.');
+        setNotification({
+          visible: true,
+          type: 'error',
+          title: 'Wallet Error',
+          message: 'Wallet is connected but address is not available. Please try again.',
+        });
       } else {
-        alert('Please connect your wallet first');
+        setNotification({
+          visible: true,
+          type: 'error',
+          title: 'Wallet Not Connected',
+          message: 'Please connect your wallet first',
+        });
       }
       return;
     }
@@ -205,7 +232,12 @@ export default function CreateEventScreen({
     onClose();
     } catch (error) {
       console.error('Error creating event:', error);
-      alert(error instanceof Error ? error.message : 'Failed to create event. Please try again.');
+      setNotification({
+        visible: true,
+        type: 'error',
+        title: 'Creation Failed',
+        message: error instanceof Error ? error.message : 'Failed to create event. Please try again.',
+      });
     } finally {
       setIsCreating(false);
     }
@@ -443,6 +475,14 @@ export default function CreateEventScreen({
           </button>
         </div>
       </div>
+
+      <NotificationModal
+        visible={notification.visible}
+        type={notification.type}
+        title={notification.title}
+        message={notification.message}
+        onClose={() => setNotification({ ...notification, visible: false })}
+      />
     </div>
   );
 }

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { IoPersonCircle, IoLogOutOutline, IoPlanet, IoShieldCheckmark } from 'react-icons/io5';
+import { useStellarWallet } from '../hooks/useStellarWallet';
+import { WalletNetwork } from '@creit.tech/stellar-wallets-kit';
 import styles from './UserMenu.module.css';
 
 interface UserMenuProps {
@@ -11,9 +13,11 @@ export default function UserMenu({ onLogout, stellarAddress }: UserMenuProps) {
   const [open, setOpen] = useState(false);
   const [stellarBalance, setStellarBalance] = useState<string>('—');
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
+  const { network } = useStellarWallet(true);
 
   const displayName = 'User';
   const walletAddress = stellarAddress ? `${stellarAddress.slice(0, 6)}…${stellarAddress.slice(-4)}` : 'Wallet';
+  const networkName = network === WalletNetwork.TESTNET ? 'Testnet' : 'Mainnet';
 
   useEffect(() => {
     let cancelled = false;
@@ -24,7 +28,7 @@ export default function UserMenu({ onLogout, stellarAddress }: UserMenuProps) {
       }
       try {
         setIsLoadingBalance(true);
-        const res = await fetch(`https://horizon.stellar.org/accounts/${stellarAddress}`);
+        const res = await fetch(`https://horizon-testnet.stellar.org/accounts/${stellarAddress}`);
         if (!res.ok) {
           if (res.status === 404) {
             if (!cancelled) setStellarBalance('0.00');
@@ -68,7 +72,14 @@ export default function UserMenu({ onLogout, stellarAddress }: UserMenuProps) {
 
       {open && (
         <>
-          <div className={styles.overlay} onClick={() => setOpen(false)} />
+          <div 
+            className={styles.overlay} 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setOpen(false);
+            }} 
+          />
           <div className={styles.dropdown}>
             <div className={styles.headerRow}>
               <div className={styles.avatar}>
@@ -78,7 +89,19 @@ export default function UserMenu({ onLogout, stellarAddress }: UserMenuProps) {
                 <div className={styles.name}>{displayName}</div>
                 <div className={styles.meta}>{walletAddress}</div>
               </div>
-              <button onClick={onLogout} className={styles.logoutButton} aria-label="Logout">
+              <button 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setOpen(false);
+                  // Small delay to ensure dropdown closes before opening modal
+                  setTimeout(() => {
+                    onLogout();
+                  }, 100);
+                }} 
+                className={styles.logoutButton} 
+                aria-label="Logout"
+              >
                 <IoLogOutOutline size={18} />
               </button>
             </div>
@@ -99,6 +122,9 @@ export default function UserMenu({ onLogout, stellarAddress }: UserMenuProps) {
                 <div className={`${styles.badge} ${styles.badgePurple}`}>
                   <IoShieldCheckmark size={14} />
                   <span className={styles.badgeText}>Wallet On</span>
+                </div>
+                <div className={`${styles.badge} ${styles.badgeBlue}`}>
+                  <span className={styles.badgeText}>{networkName}</span>
                 </div>
               </div>
             </div>

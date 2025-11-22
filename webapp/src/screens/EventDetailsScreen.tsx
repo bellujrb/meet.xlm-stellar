@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { IoClose, IoTime, IoLocation, IoCheckmarkCircle, IoPersonAdd, IoCube, IoMail, IoShareSocial, IoEllipsisHorizontal, IoShieldCheckmark, IoLocationOutline, IoWifi, IoKey, IoQrCodeOutline, IoKeypad } from 'react-icons/io5';
 import { DEFAULT_EVENT_IMAGE } from '../config/constants';
+import NotificationModal from '../components/NotificationModal';
 import styles from './EventDetailsScreen.module.css';
 
 interface EventDetailsScreenProps {
@@ -50,15 +51,31 @@ export default function EventDetailsScreen({
   mintInfo,
 }: EventDetailsScreenProps) {
   const [showMintOptions, setShowMintOptions] = useState(false);
+  const [notification, setNotification] = useState<{ visible: boolean; type: 'success' | 'error' | 'info'; title: string; message: string }>({
+    visible: false,
+    type: 'info',
+    title: '',
+    message: '',
+  });
 
   const handleMintOption = (option: string) => {
     setShowMintOptions(false);
-    alert(`You selected: ${option}`);
+    setNotification({
+      visible: true,
+      type: 'info',
+      title: 'Mint Method Selected',
+      message: `You selected: ${option}`,
+    });
   };
 
   const handlePrimaryAction = () => {
     if (isMinted) {
-      alert('Already Collected - You have already minted this POAP! ✨');
+      setNotification({
+        visible: true,
+        type: 'success',
+        title: 'Already Collected',
+        message: 'You have already minted this POAP! ✨',
+      });
     } else if (!isRegistered) {
       onRegister?.();
       onClose();
@@ -197,17 +214,32 @@ export default function EventDetailsScreen({
           </button>
 
           <div className={styles.secondaryActions}>
-            <button className={styles.secondaryButton} onClick={() => alert('Contact')}>
+            <button className={styles.secondaryButton} onClick={() => setNotification({
+              visible: true,
+              type: 'info',
+              title: 'Contact',
+              message: 'Contact feature coming soon!',
+            })}>
               <IoMail size={20} />
               <span className={styles.secondaryButtonText}>Contact</span>
             </button>
 
-            <button className={styles.secondaryButton} onClick={() => alert('Share')}>
+            <button className={styles.secondaryButton} onClick={() => setNotification({
+              visible: true,
+              type: 'info',
+              title: 'Share',
+              message: 'Share feature coming soon!',
+            })}>
               <IoShareSocial size={20} />
               <span className={styles.secondaryButtonText}>Share</span>
             </button>
 
-            <button className={styles.secondaryButton} onClick={() => alert('More')}>
+            <button className={styles.secondaryButton} onClick={() => setNotification({
+              visible: true,
+              type: 'info',
+              title: 'More Options',
+              message: 'More options coming soon!',
+            })}>
               <IoEllipsisHorizontal size={20} />
               <span className={styles.secondaryButtonText}>More</span>
             </button>
@@ -247,6 +279,14 @@ export default function EventDetailsScreen({
             </div>
           </div>
         )}
+
+        <NotificationModal
+          visible={notification.visible}
+          type={notification.type}
+          title={notification.title}
+          message={notification.message}
+          onClose={() => setNotification({ ...notification, visible: false })}
+        />
       </div>
     </div>
   );

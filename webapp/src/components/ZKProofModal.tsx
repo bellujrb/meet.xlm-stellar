@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { IoClose, IoShieldCheckmark, IoLockClosed, IoFlash, IoKey, IoCheckmark, IoArrowForward, IoCheckmarkCircle } from 'react-icons/io5';
+import { useStellarWallet } from '../hooks/useStellarWallet';
+import { getXlmBalance } from '../lib/xlmBalance';
+import { generateProof, generateRandomNonce, type ProofResult } from '../lib/zkProof';
 import styles from './ZKProofModal.module.css';
 
 interface ZKProofModalProps {
@@ -15,34 +18,74 @@ export default function ZKProofModal({
   onClose,
   onSuccess,
 }: ZKProofModalProps) {
-  const [stage, setStage] = useState<'intro' | 'generating' | 'success'>('intro');
+  const [stage, setStage] = useState<'intro' | 'generating' | 'success' | 'error'>('intro');
   const [progress, setProgress] = useState(0);
+  const [progressText, setProgressText] = useState('');
+  const [proofResult, setProofResult] = useState<ProofResult | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const { publicKey: stellarAddress } = useStellarWallet(true);
 
   useEffect(() => {
     if (visible) {
       setStage('intro');
       setProgress(0);
+      setProgressText('');
+      setProofResult(null);
+      setErrorMessage('');
     }
   }, [visible]);
 
-  useEffect(() => {
-    if (stage === 'generating') {
-      const interval = setInterval(() => {
-        setProgress((prev) => {
-          if (prev >= 100) {
-            clearInterval(interval);
-            setStage('success');
-            return 100;
-          }
-          return prev + 2;
-        });
-      }, 50);
-      return () => clearInterval(interval);
+  const handleStartProof = async () => {
+    if (!stellarAddress) {
+      setErrorMessage('Please connect your wallet first');
+      setStage('error');
+      return;
     }
-  }, [stage]);
 
-  const handleStartProof = () => {
     setStage('generating');
+    setProgress(0);
+    setProgressText('Starting...');
+
+    try {
+      // Step 1: Get XLM balance
+      setProgress(10);
+      setProgressText('Connecting to wallet...');
+      const balance = await getXlmBalance(stellarAddress);
+      
+      if (balance < xlmRequired) {
+        throw new Error(`Insufficient balance. Required: ${xlmRequired} XLM, You have: ${balance.toFixed(2)} XLM`);
+      }
+
+      // Step 2: Generate nonce
+      setProgress(20);
+      setProgressText('Verifying balance...');
+      const nonce = generateRandomNonce();
+
+      // Step 3: Generate proof
+      setProgress(30);
+      setProgressText('Generating commitment...');
+      const proof = await generateProof(
+        {
+          threshold: Math.floor(xlmRequired * 10000000), // Convert to stroops (1 XLM = 10,000,000 stroops)
+          nonce: nonce,
+          balance: Math.floor(balance * 10000000), // Convert to stroops
+          secret_nonce: nonce,
+        },
+        (progressValue, text) => {
+          setProgress(30 + (progressValue * 0.7)); // Map 0-100 to 30-100
+          setProgressText(text);
+        }
+      );
+
+      setProofResult(proof);
+      setProgress(100);
+      setProgressText('Proof generated successfully!');
+      setStage('success');
+    } catch (error) {
+      console.error('Error generating proof:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to generate proof');
+      setStage('error');
+    }
   };
 
   const handleComplete = () => {
@@ -140,7 +183,7 @@ export default function ZKProofModal({
             </div>
 
             <h2 className={styles.generatingTitle}>Generating ZK Proof...</h2>
-            <p className={styles.generatingSubtitle}>Computing cryptographic proof</p>
+            <p className={styles.generatingSubtitle}>{progressText || 'Computing cryptographic proof'}</p>
 
             <div className={styles.progressContainer}>
               <div className={styles.progressBar}>
@@ -183,17 +226,47 @@ export default function ZKProofModal({
             <h2 className={styles.successTitle}>Proof Generated! ✨</h2>
             <p className={styles.successSubtitle}>Verification completed successfully</p>
 
-            <div className={styles.proofCard}>
-              <div className={styles.proofLabel}>ZK Proof</div>
-              <div className={styles.proofHash}>zk_0x4a7b...9f3c</div>
-              <div className={styles.proofDetails}>
-                Valid until: {new Date(Date.now() + 3600000).toLocaleString('en-US')}
+            {proofResult && (
+              <div className={styles.proofCard}>
+                <div className={styles.proofLabel}>ZK Proof</div>
+                <div className={styles.proofHash}>
+                  {proofResult.proofB64.slice(0, 20)}...{proofResult.proofB64.slice(-10)}
+                </div>
+                <div className={styles.proofDetails}>
+                  {proofResult.isValid ? '✓ Verified locally' : '⚠ Not verified'}
+                </div>
+                <div className={styles.proofDetails}>
+                  Valid until: {new Date(Date.now() + 3600000).toLocaleString('en-US')}
+                </div>
               </div>
-            </div>
+            )}
 
             <button className={styles.completeButton} onClick={handleComplete}>
               <span className={styles.completeButtonText}>Continue Registration</span>
               <IoArrowForward size={24} />
+            </button>
+          </div>
+        )}
+
+        {stage === 'error' && (
+          <div className={styles.content}>
+            <div className={styles.errorIcon}>
+              <IoShieldCheckmark size={80} color="#EF4444" />
+            </div>
+
+            <h2 className={styles.errorTitle}>Proof Generation Failed</h2>
+            <p className={styles.errorSubtitle}>{errorMessage || 'An error occurred while generating the proof'}</p>
+
+            <button className={styles.generateButton} onClick={() => {
+              setStage('intro');
+              setErrorMessage('');
+            }}>
+              <IoKey size={24} />
+              <span className={styles.generateButtonText}>Try Again</span>
+            </button>
+
+            <button className={styles.closeButton} onClick={onClose} style={{ marginTop: '16px' }}>
+              Close
             </button>
           </div>
         )}

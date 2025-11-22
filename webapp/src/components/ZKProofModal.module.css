@@ -406,3 +406,29 @@
   letter-spacing: 0.3px;
 }
 
+.errorIcon {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.errorTitle {
+  font-size: 28px;
+  font-weight: 800;
+  color: #EF4444;
+  text-align: center;
+  margin: 0 0 12px 0;
+  letter-spacing: -0.5px;
+}
+
+.errorSubtitle {
+  font-size: 16px;
+  color: #71717A;
+  text-align: center;
+  margin: 0 0 32px 0;
+  line-height: 1.5;
+}
+

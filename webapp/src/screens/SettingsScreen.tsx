@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { IoCopyOutline, IoQrCodeOutline, IoChevronForward } from 'react-icons/io5';
 import UserMenu from '../components/UserMenu';
 import QRCodeModal from '../components/QRCodeModal';
+import NotificationModal from '../components/NotificationModal';
 import { useStellarWallet } from '../hooks/useStellarWallet';
 import styles from './SettingsScreen.module.css';
 
@@ -19,6 +20,12 @@ export default function SettingsScreen({
 }: SettingsScreenProps) {
   const { publicKey: stellarAddress } = useStellarWallet(true);
   const [showQRCode, setShowQRCode] = useState(false);
+  const [notification, setNotification] = useState<{ visible: boolean; type: 'success' | 'error' | 'info'; title: string; message: string }>({
+    visible: false,
+    type: 'info',
+    title: '',
+    message: '',
+  });
 
   // Format wallet address for display
   const displayAddress = stellarAddress 
@@ -28,9 +35,19 @@ export default function SettingsScreen({
   const handleCopyAddress = () => {
     if (stellarAddress) {
       navigator.clipboard.writeText(stellarAddress);
-      alert('Copied! 📋 Address copied to clipboard');
+      setNotification({
+        visible: true,
+        type: 'success',
+        title: 'Copied!',
+        message: 'Address copied to clipboard 📋',
+      });
     } else {
-      alert('Wallet not connected');
+      setNotification({
+        visible: true,
+        type: 'error',
+        title: 'Wallet Not Connected',
+        message: 'Please connect your wallet first',
+      });
     }
   };
 
@@ -38,7 +55,12 @@ export default function SettingsScreen({
     if (stellarAddress) {
       setShowQRCode(true);
     } else {
-      alert('Wallet not connected');
+      setNotification({
+        visible: true,
+        type: 'error',
+        title: 'Wallet Not Connected',
+        message: 'Please connect your wallet first',
+      });
     }
   };
 
@@ -95,7 +117,12 @@ export default function SettingsScreen({
           <div className={styles.menuSection}>
             <button
               className={styles.menuItem}
-              onClick={() => alert('FAQ - Frequently asked questions')}
+              onClick={() => setNotification({
+                visible: true,
+                type: 'info',
+                title: 'FAQ',
+                message: 'Frequently asked questions - Coming soon!',
+              })}
             >
               <span className={styles.menuItemText}>FAQ</span>
               <IoChevronForward size={24} />
@@ -103,7 +130,12 @@ export default function SettingsScreen({
 
             <button
               className={styles.menuItem}
-              onClick={() => alert('Notifications - Configure push notifications')}
+              onClick={() => setNotification({
+                visible: true,
+                type: 'info',
+                title: 'Push Notifications',
+                message: 'Configure push notifications - Coming soon!',
+              })}
             >
               <span className={styles.menuItemText}>Push Notifications</span>
               <IoChevronForward size={24} />
@@ -113,7 +145,12 @@ export default function SettingsScreen({
           <div className={styles.feedbackCard}>
             <button
               className={styles.feedbackButton}
-              onClick={() => alert('Feedback - Send us your feedback!')}
+              onClick={() => setNotification({
+                visible: true,
+                type: 'info',
+                title: 'Feedback',
+                message: 'Send us your feedback - Coming soon!',
+              })}
             >
               <span className={styles.feedbackButtonText}>Send your feedback</span>
               <IoChevronForward size={20} />
@@ -134,6 +171,14 @@ export default function SettingsScreen({
           address={stellarAddress}
         />
       )}
+
+      <NotificationModal
+        visible={notification.visible}
+        type={notification.type}
+        title={notification.title}
+        message={notification.message}
+        onClose={() => setNotification({ ...notification, visible: false })}
+      />
     </div>
   );
 }

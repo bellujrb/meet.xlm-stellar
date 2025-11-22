@@ -12,7 +12,7 @@ let kitInstance: StellarWalletsKit | null = null;
 function getKit(): StellarWalletsKit {
   if (!kitInstance) {
     kitInstance = new StellarWalletsKit({
-      network: WalletNetwork.PUBLIC,
+      network: WalletNetwork.TESTNET,
       selectedWalletId: XBULL_ID,
       modules: allowAllModules(),
     });
@@ -25,6 +25,7 @@ export function useStellarWallet(enabled: boolean) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
 
   const connect = useCallback(async () => {
     if (!enabled) return;
@@ -53,13 +54,25 @@ export function useStellarWallet(enabled: boolean) {
 
   const disconnect = useCallback(async () => {
     try {
-      const kit = getKit();
-      await kit.disconnect();
+      setIsDisconnecting(true);
+      
+      // Clear state immediately to prevent any reconnection attempts
+      // This prevents the useEffect from trying to reconnect
       setPublicKey(null);
       setIsConnected(false);
+      setError(null);
+      
+      // Reset kit instance - this prevents the kit from trying to open modals
+      // We don't call kit.disconnect() because it may try to open xBull wallet
+      kitInstance = null;
     } catch (err) {
-      const e = err instanceof Error ? err : new Error('Error disconnecting wallet');
-      setError(e);
+      // Still clear state even if something fails
+      setPublicKey(null);
+      setIsConnected(false);
+      setError(null);
+      kitInstance = null;
+    } finally {
+      setIsDisconnecting(false);
     }
   }, []);
 
@@ -83,19 +96,25 @@ export function useStellarWallet(enabled: boolean) {
 
   // Check if already connected on mount
   useEffect(() => {
+    // Don't check if we're currently disconnecting
+    if (isDisconnecting) return;
+    
     if (enabled && !publicKey) {
       // Try to get address if already connected
       const kit = getKit();
       kit.getAddress()
         .then(({ address }: { address: string }) => {
-          setPublicKey(address);
-          setIsConnected(true);
+          // Only set if we're not disconnecting
+          if (!isDisconnecting) {
+            setPublicKey(address);
+            setIsConnected(true);
+          }
         })
         .catch(() => {
           // Not connected, that's okay
         });
     }
-  }, [enabled, publicKey]);
+  }, [enabled, publicKey, isDisconnecting]);
 
   return {
     publicKey,
@@ -106,6 +125,7 @@ export function useStellarWallet(enabled: boolean) {
     disconnect,
     signTransaction,
     kit: getKit(),
+    network: WalletNetwork.TESTNET, // Current network
   };
 }
 

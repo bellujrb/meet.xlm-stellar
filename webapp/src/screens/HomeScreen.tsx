@@ -9,6 +9,8 @@ import BottomNavigation from '../components/BottomNavigation';
 import SuccessModal from '../components/SuccessModal';
 import ZKProofModal from '../components/ZKProofModal';
 import RegisterSuccessModal from '../components/RegisterSuccessModal';
+import LogoutModal from '../components/LogoutModal';
+import NotificationModal from '../components/NotificationModal';
 import { apiClient } from '../services/api';
 import { TabName, Event } from '../types';
 import styles from './HomeScreen.module.css';
@@ -37,6 +39,13 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
   const { publicKey: stellarAddress, disconnect } = useStellarWallet(true);
   const [confirmedEvents, setConfirmedEvents] = useState<Event[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [notification, setNotification] = useState<{ visible: boolean; type: 'success' | 'error' | 'info'; title: string; message: string }>({
+    visible: false,
+    type: 'info',
+    title: '',
+    message: '',
+  });
 
   // Fetch user's events
   useEffect(() => {
@@ -68,10 +77,23 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
   };
 
 
-  const handleLogoutPress = async () => {
-    if (confirm('Are you sure you want to disconnect your wallet?')) {
+  const handleLogoutPress = () => {
+    setShowLogoutModal(true);
+  };
+
+  const handleConfirmLogout = async () => {
+    try {
       await disconnect();
+      setShowLogoutModal(false);
       onLogout();
+    } catch (error) {
+      setShowLogoutModal(false);
+      setNotification({
+        visible: true,
+        type: 'error',
+        title: 'Disconnect Failed',
+        message: error instanceof Error ? error.message : 'Failed to disconnect wallet. Please try again.',
+      });
     }
   };
 
@@ -145,7 +167,12 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
         }
       } catch (error) {
         console.error('Error registering attendance:', error);
-        alert(error instanceof Error ? error.message : 'Failed to register attendance. Please try again.');
+        setNotification({
+          visible: true,
+          type: 'error',
+          title: 'Registration Failed',
+          message: error instanceof Error ? error.message : 'Failed to register attendance. Please try again.',
+        });
       }
     }
   };
@@ -172,7 +199,12 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
                 <span className={styles.decorativeEmoji}>🎉</span>
               </div>
               <button 
-                onClick={() => alert('See All - Loading all events...')}
+                onClick={() => setNotification({
+                  visible: true,
+                  type: 'info',
+                  title: 'Coming Soon',
+                  message: 'This feature will be available soon!',
+                })}
                 className={styles.seeAllBadge}
               >
                 <span className={styles.seeAllButton}>See All ›</span>
@@ -225,7 +257,12 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
                 <span className={styles.decorativeEmoji}>📅</span>
               </div>
               <button 
-                onClick={() => alert('See All - Loading all collections...')}
+                onClick={() => setNotification({
+                  visible: true,
+                  type: 'info',
+                  title: 'Coming Soon',
+                  message: 'This feature will be available soon!',
+                })}
                 className={styles.seeAllBadge}
               >
                 <span className={styles.seeAllButton}>See All ›</span>
@@ -324,6 +361,20 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
           mintInfo={undefined}
         />
       )}
+
+      <LogoutModal
+        visible={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleConfirmLogout}
+      />
+
+      <NotificationModal
+        visible={notification.visible}
+        type={notification.type}
+        title={notification.title}
+        message={notification.message}
+        onClose={() => setNotification({ ...notification, visible: false })}
+      />
     </div>
   );
 }

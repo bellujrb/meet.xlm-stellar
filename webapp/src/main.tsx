@@ -1,7 +1,5 @@
-// Polyfill for global
-if (typeof global === 'undefined') {
-  (window as any).global = globalThis;
-}
+// Import polyfills first
+import './lib/polyfills';
 
 import React from 'react'
 import ReactDOM from 'react-dom/client'

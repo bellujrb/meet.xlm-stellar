@@ -162,6 +162,10 @@
   background-color: #A78BFA;
 }
 
+.badgeBlue {
+  background-color: #3B82F6;
+}
+
 .badgeText {
   font-size: 12px;
   font-weight: 800;
