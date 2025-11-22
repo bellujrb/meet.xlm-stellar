@@ -1,5 +1,6 @@
-
-import { IoNotifications, IoNotificationsOff, IoLogOutOutline } from 'react-icons/io5';
+import { IoNotifications, IoNotificationsOff } from 'react-icons/io5';
+import UserMenu from '../components/UserMenu';
+import { useStellarWallet } from '../hooks/useStellarWallet';
 import styles from './NotificationsScreen.module.css';
 
 interface NotificationsScreenProps {
@@ -12,6 +13,8 @@ export default function NotificationsScreen({
   visible,
   onLogout,
 }: NotificationsScreenProps) {
+  const { publicKey: stellarAddress } = useStellarWallet(true);
+
   if (!visible) return null;
 
   return (
@@ -23,9 +26,10 @@ export default function NotificationsScreen({
           </div>
           <h2 className={styles.headerTitle}>Notifications</h2>
         </div>
-        <button onClick={onLogout} className={styles.closeButton} aria-label="Logout">
-          <IoLogOutOutline size={24} />
-        </button>
+        <UserMenu
+          onLogout={onLogout}
+          stellarAddress={stellarAddress || undefined}
+        />
       </div>
 
       <div className={styles.scrollView}>

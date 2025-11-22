@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { IoClose, IoImage, IoCalendar, IoLocation, IoShieldCheckmark } from 'react-icons/io5';
+import { useState, useEffect, useRef } from 'react';
+import { IoClose, IoImage, IoCalendar, IoLocation, IoShieldCheckmark, IoTrash } from 'react-icons/io5';
 import { apiClient } from '../services/api';
 import { useStellarWallet } from '../hooks/useStellarWallet';
 import styles from './CreateEventScreen.module.css';
@@ -8,14 +8,18 @@ interface CreateEventScreenProps {
   visible: boolean;
   onClose: () => void;
   onSuccess: (eventName: string, eventDate: string) => void;
+  stellarAddress?: string | null;
 }
 
 export default function CreateEventScreen({
   visible,
   onClose,
   onSuccess,
+  stellarAddress: propStellarAddress,
 }: CreateEventScreenProps) {
-  const { publicKey: stellarAddress } = useStellarWallet(true);
+  const { publicKey: hookStellarAddress, isConnected } = useStellarWallet(true);
+  // Use prop if provided, otherwise fallback to hook
+  const stellarAddress = propStellarAddress ?? hookStellarAddress;
   const [eventName, setEventName] = useState('');
   const [startDate, setStartDate] = useState('');
   const [location, setLocation] = useState('');
@@ -25,6 +29,9 @@ export default function CreateEventScreen({
   const [requireXLM, setRequireXLM] = useState(false);
   const [xlmAmount, setXlmAmount] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [errors, setErrors] = useState({
     eventName: '',
     startDate: '',
@@ -42,6 +49,54 @@ export default function CreateEventScreen({
       document.body.style.overflow = '';
     };
   }, [visible]);
+
+  // Reset image when modal closes
+  useEffect(() => {
+    if (!visible) {
+      setSelectedImage(null);
+      setImageFile(null);
+    }
+  }, [visible]);
+
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size must be less than 5MB');
+        return;
+      }
+
+      setImageFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedImage(null);
+    setImageFile(null);
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleImagePlaceholderClick = () => {
+    fileInputRef.current?.click();
+  };
 
   const handleCreateEvent = async () => {
     const newErrors = {
@@ -73,14 +128,31 @@ export default function CreateEventScreen({
       hasError = true;
     }
 
-    if (!stellarAddress) {
-      alert('Please connect your wallet first');
-      return;
-    }
-
     setErrors(newErrors);
 
     if (hasError) {
+      return;
+    }
+
+    // Check wallet connection - use both address and isConnected for reliability
+    // Final check - if we still don't have address, try to get it one more time
+    const finalAddress = stellarAddress || hookStellarAddress;
+    
+    // Debug log (can be removed later)
+    console.log('CreateEventScreen - Wallet check:', {
+      propStellarAddress,
+      hookStellarAddress,
+      finalAddress,
+      isConnected,
+    });
+    
+    if (!finalAddress) {
+      if (isConnected) {
+        // Wallet is connected but address not available - try to get it
+        alert('Wallet is connected but address is not available. Please try again.');
+      } else {
+        alert('Please connect your wallet first');
+      }
       return;
     }
 
@@ -88,6 +160,17 @@ export default function CreateEventScreen({
     try {
       // Convert datetime-local to ISO string
       const startTime = new Date(startDate).toISOString();
+      
+      // Convert image to base64 if selected
+      // If no image is selected, imageUrl will be undefined/null and backend will handle default
+      let imageUrl: string | undefined = undefined;
+      if (selectedImage && imageFile) {
+        // Use base64 data URL directly
+        // Note: For production, consider uploading to Supabase Storage or similar service
+        // to avoid storing large base64 strings in the database
+        imageUrl = selectedImage;
+      }
+      // If no image, don't send imageUrl (backend will use null, frontend will use default)
       
       const response = await apiClient.createEvent(
         {
@@ -97,26 +180,29 @@ export default function CreateEventScreen({
           startTime,
           location: location.trim(),
           description: description.trim() || undefined,
+          imageUrl,
           requiresXlm: requireXLM,
           xlmMinimum: requireXLM && xlmAmount ? parseFloat(xlmAmount) : undefined,
         },
-        stellarAddress
+        finalAddress
       );
 
       onSuccess(response.title, new Date(response.start_time).toLocaleDateString());
       
       // Reset form
-      setEventName('');
-      setStartDate('');
-      setLocation('');
-      setDescription('');
+    setEventName('');
+    setStartDate('');
+    setLocation('');
+    setDescription('');
       setOrganizer('');
       setOrganizerIcon('🎉');
-      setRequireXLM(false);
-      setXlmAmount('');
+    setRequireXLM(false);
+    setXlmAmount('');
+      setSelectedImage(null);
+      setImageFile(null);
       setErrors({ eventName: '', startDate: '', location: '', organizer: '' });
-      
-      onClose();
+    
+    onClose();
     } catch (error) {
       console.error('Error creating event:', error);
       alert(error instanceof Error ? error.message : 'Failed to create event. Please try again.');
@@ -144,14 +230,52 @@ export default function CreateEventScreen({
 
         <div className={styles.scrollView}>
           <div className={styles.content}>
-            <div className={styles.imagePlaceholder}>
-              <div className={styles.imagePlaceholderContent}>
-                <div className={styles.imageIcon}>
-                  <IoImage size={48} />
+            <div className={styles.imageUploadContainer}>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageSelect}
+                style={{ display: 'none' }}
+                id="image-upload-input"
+              />
+              {selectedImage ? (
+                <div className={styles.imagePreviewContainer}>
+                  <img 
+                    src={selectedImage} 
+                    alt="Event cover preview" 
+                    className={styles.imagePreview}
+                  />
+                  <button
+                    className={styles.removeImageButton}
+                    onClick={handleRemoveImage}
+                    aria-label="Remove image"
+                  >
+                    <IoTrash size={20} />
+                  </button>
+                  <button
+                    className={styles.changeImageButton}
+                    onClick={handleImagePlaceholderClick}
+                    aria-label="Change image"
+                  >
+                    Change Image
+                  </button>
                 </div>
-                <div className={styles.imagePlaceholderText}>Add Cover</div>
-                <div className={styles.imagePlaceholderSubtext}>Tap to add an image</div>
-              </div>
+              ) : (
+                <div 
+                  className={styles.imagePlaceholder}
+                  onClick={handleImagePlaceholderClick}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div className={styles.imagePlaceholderContent}>
+                    <div className={styles.imageIcon}>
+                      <IoImage size={48} />
+                    </div>
+                    <div className={styles.imagePlaceholderText}>Add Cover</div>
+                    <div className={styles.imagePlaceholderSubtext}>Tap to add an image</div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className={styles.inputGroup}>

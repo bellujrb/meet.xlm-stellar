@@ -1,4 +1,6 @@
-import { IoLogOutOutline, IoCopyOutline, IoQrCodeOutline, IoChevronForward } from 'react-icons/io5';
+import { IoCopyOutline, IoQrCodeOutline, IoChevronForward } from 'react-icons/io5';
+import UserMenu from '../components/UserMenu';
+import { useStellarWallet } from '../hooks/useStellarWallet';
 import styles from './SettingsScreen.module.css';
 
 interface SettingsScreenProps {
@@ -16,6 +18,8 @@ export default function SettingsScreen({
   visible,
   onLogout,
 }: SettingsScreenProps) {
+  const { publicKey: stellarAddress } = useStellarWallet(true);
+
   const handleCopyAddress = () => {
     navigator.clipboard.writeText(FULL_WALLET_ADDRESS);
     alert('Copied! 📋 Address copied to clipboard');
@@ -31,9 +35,10 @@ export default function SettingsScreen({
     <div className={styles.container}>
       <div className={styles.header}>
         <h2 className={styles.headerTitle}>Settings</h2>
-        <button onClick={onLogout} className={styles.closeButton} aria-label="Logout">
-          <IoLogOutOutline size={24} />
-        </button>
+        <UserMenu
+          onLogout={onLogout}
+          stellarAddress={stellarAddress || undefined}
+        />
       </div>
 
       <div className={styles.scrollView}>

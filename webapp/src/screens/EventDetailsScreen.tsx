@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { IoClose, IoTime, IoLocation, IoCheckmarkCircle, IoPersonAdd, IoCube, IoMail, IoShareSocial, IoEllipsisHorizontal, IoShieldCheckmark } from 'react-icons/io5';
+import { DEFAULT_EVENT_IMAGE } from '../config/constants';
 import styles from './EventDetailsScreen.module.css';
 
 interface EventDetailsScreenProps {
@@ -102,7 +103,7 @@ export default function EventDetailsScreen({
 
         <div className={styles.scrollView}>
           <div className={styles.imageContainer}>
-            <img src={event.image} alt={event.title} className={styles.eventImage} />
+            <img src={event.image || DEFAULT_EVENT_IMAGE} alt={event.title} className={styles.eventImage} />
             <div className={`${styles.statusBadge} ${event.status === 'LIVE' ? styles.statusBadgeLive : ''}`}>
               <span className={`${styles.statusText} ${event.status === 'LIVE' ? styles.statusTextLive : ''}`}>
                 {event.status === 'LIVE' ? 'LIVE' : event.statusTime}

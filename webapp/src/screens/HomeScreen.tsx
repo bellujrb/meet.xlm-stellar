@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { IoSearch } from 'react-icons/io5';
 import EventCard from '../components/EventCard';
+import EventCardSkeleton from '../components/EventCardSkeleton';
 import Header from '../components/Header';
 import UserMenu from '../components/UserMenu';
 import { useStellarWallet } from '../hooks/useStellarWallet';
@@ -135,12 +136,20 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
         } else {
           selectedEventForRegister.isRegistered = true;
         }
+        // If we're on search screen, trigger refresh there too
+        if (currentScreen === 'search') {
+          const refreshFn = (window as any).__refreshSearchEvents;
+          if (refreshFn) {
+            refreshFn();
+          }
+        }
       } catch (error) {
         console.error('Error registering attendance:', error);
         alert(error instanceof Error ? error.message : 'Failed to register attendance. Please try again.');
       }
     }
   };
+
 
   return (
     <div className={styles.container}>
@@ -171,10 +180,11 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
             </div>
 
             {loadingEvents ? (
-              <div className={styles.emptyEventsState}>
-                <div className={styles.emptyEventsEmoji}>⏳</div>
-                <p className={styles.emptyEventsText}>Loading your events...</p>
-              </div>
+              <>
+                <EventCardSkeleton />
+                <EventCardSkeleton />
+                <EventCardSkeleton />
+              </>
             ) : confirmedEvents.length > 0 ? (
               confirmedEvents.map((event) => (
                 <EventCard
@@ -277,6 +287,7 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
         visible={showCreateEvent}
         onClose={() => setShowCreateEvent(false)}
         onSuccess={handleEventCreated}
+        stellarAddress={stellarAddress}
       />
 
       <SuccessModal

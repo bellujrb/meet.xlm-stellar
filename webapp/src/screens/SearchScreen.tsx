@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { IoSearch, IoCloseCircle, IoLogOutOutline } from 'react-icons/io5';
+import { IoSearch, IoCloseCircle } from 'react-icons/io5';
 import EventCard from '../components/EventCard';
+import EventCardSkeleton from '../components/EventCardSkeleton';
+import UserMenu from '../components/UserMenu';
 import { apiClient } from '../services/api';
 import { useStellarWallet } from '../hooks/useStellarWallet';
 import { Event } from '../types';
@@ -24,34 +26,50 @@ export default function SearchScreen({
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [availableEvents, setAvailableEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { publicKey: stellarAddress } = useStellarWallet(true);
 
   const cities = ['All', 'Buenos Aires', 'São Paulo', 'Online'];
 
   // Fetch events from API
+  const fetchEvents = async () => {
+    if (!visible) return;
+
+    setLoading(true);
+    try {
+      const response = await apiClient.listEvents({
+        walletAddress: stellarAddress || undefined,
+        limit: 100,
+      });
+      const events = response.events.map(apiEvent => apiClient.convertApiEventToEvent(apiEvent));
+      // Filter out registered events immediately to prevent visual flash
+      const unregisteredEvents = events.filter(event => !event.isRegistered);
+      setAvailableEvents(unregisteredEvents);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      setAvailableEvents([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchEvents = async () => {
-      if (!visible) return;
-
-      setLoading(true);
-      try {
-        const response = await apiClient.listEvents({
-          walletAddress: stellarAddress || undefined,
-          limit: 100,
-        });
-        const events = response.events.map(apiEvent => apiClient.convertApiEventToEvent(apiEvent));
-        setAvailableEvents(events);
-      } catch (error) {
-        console.error('Error fetching events:', error);
-        setAvailableEvents([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchEvents();
-  }, [visible, stellarAddress]);
+  }, [visible, stellarAddress, refreshTrigger]);
 
+  // Expose refresh function to parent via window (for cross-component communication)
+  useEffect(() => {
+    const refreshCallback = () => {
+      setRefreshTrigger(prev => prev + 1);
+    };
+    (window as any).__refreshSearchEvents = refreshCallback;
+    return () => {
+      delete (window as any).__refreshSearchEvents;
+    };
+  }, []);
+
+  // Filter events by search query and city
+  // Note: registered events are already filtered out when fetching
   const filteredEvents = availableEvents.filter((event) => {
     const matchesSearch =
       event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -77,9 +95,10 @@ export default function SearchScreen({
           </div>
           <h2 className={styles.headerTitle}>Popular Events</h2>
         </div>
-        <button onClick={onLogout} className={styles.closeButton} aria-label="Logout">
-          <IoLogOutOutline size={24} />
-        </button>
+        <UserMenu
+          onLogout={onLogout}
+          stellarAddress={stellarAddress || undefined}
+        />
       </div>
 
       <div className={styles.scrollView}>
@@ -121,10 +140,12 @@ export default function SearchScreen({
           </h3>
 
           {loading ? (
-            <div className={styles.emptyState}>
-              <div className={styles.emptyEmoji}>⏳</div>
-              <div className={styles.emptyText}>Loading events...</div>
-            </div>
+            <>
+              <EventCardSkeleton />
+              <EventCardSkeleton />
+              <EventCardSkeleton />
+              <EventCardSkeleton />
+            </>
           ) : filteredEvents.length > 0 ? (
             filteredEvents.map((event) => (
               <EventCard

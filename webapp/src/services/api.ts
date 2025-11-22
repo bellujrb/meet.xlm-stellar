@@ -191,7 +191,7 @@ class ApiClient {
       organizerIcon: apiEvent.organizer_icon,
       time: apiEvent.time,
       location: apiEvent.location,
-      image: apiEvent.image || '',
+      image: apiEvent.image || '', // Empty string will trigger default image in components
       status: apiEvent.status === 'ENDED' ? 'UPCOMING' : apiEvent.status,
       description: apiEvent.description || undefined,
       attendees: apiEvent.attendees,
