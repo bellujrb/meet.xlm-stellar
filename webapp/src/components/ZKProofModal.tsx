@@ -82,12 +82,12 @@ export default function ZKProofModal({
               <IoShieldCheckmark size={80} color="#A78BFA" />
             </div>
 
-            <h2 className={styles.title}>Prova Zero-Knowledge 🔐</h2>
-            <p className={styles.subtitle}>Verificação de Saldo XLM</p>
+            <h2 className={styles.title}>Zero-Knowledge Proof 🔐</h2>
+            <p className={styles.subtitle}>XLM Balance Verification</p>
 
             <div className={styles.infoCard}>
               <div className={styles.infoRow}>
-                <span className={styles.infoLabel}>Requer Mínimo:</span>
+                <span className={styles.infoLabel}>Minimum Required:</span>
                 <div className={styles.xlmBadge}>
                   <span className={styles.xlmAmount}>{xlmRequired} XLM</span>
                 </div>
@@ -100,8 +100,8 @@ export default function ZKProofModal({
                   <IoLockClosed size={24} />
                 </div>
                 <div className={styles.featureText}>
-                  <div className={styles.featureTitle}>Privacidade Total</div>
-                  <div className={styles.featureDescription}>Seu saldo não é revelado</div>
+                  <div className={styles.featureTitle}>Total Privacy</div>
+                  <div className={styles.featureDescription}>Your balance is not revealed</div>
                 </div>
               </div>
 
@@ -110,8 +110,8 @@ export default function ZKProofModal({
                   <IoFlash size={24} />
                 </div>
                 <div className={styles.featureText}>
-                  <div className={styles.featureTitle}>Verificação Instantânea</div>
-                  <div className={styles.featureDescription}>Prova matemática garantida</div>
+                  <div className={styles.featureTitle}>Instant Verification</div>
+                  <div className={styles.featureDescription}>Mathematical proof guaranteed</div>
                 </div>
               </div>
 
@@ -120,15 +120,15 @@ export default function ZKProofModal({
                   <IoShieldCheckmark size={24} />
                 </div>
                 <div className={styles.featureText}>
-                  <div className={styles.featureTitle}>Zero Conhecimento</div>
-                  <div className={styles.featureDescription}>Apenas prova que você tem o mínimo</div>
+                  <div className={styles.featureTitle}>Zero Knowledge</div>
+                  <div className={styles.featureDescription}>Only proves you have the minimum</div>
                 </div>
               </div>
             </div>
 
             <button className={styles.generateButton} onClick={handleStartProof}>
               <IoKey size={24} />
-              <span className={styles.generateButtonText}>Gerar Prova ZK</span>
+              <span className={styles.generateButtonText}>Generate ZK Proof</span>
             </button>
           </div>
         )}
@@ -139,8 +139,8 @@ export default function ZKProofModal({
               <IoKey size={80} color="#A78BFA" />
             </div>
 
-            <h2 className={styles.generatingTitle}>Gerando Prova ZK...</h2>
-            <p className={styles.generatingSubtitle}>Computando prova criptográfica</p>
+            <h2 className={styles.generatingTitle}>Generating ZK Proof...</h2>
+            <p className={styles.generatingSubtitle}>Computing cryptographic proof</p>
 
             <div className={styles.progressContainer}>
               <div className={styles.progressBar}>
@@ -151,10 +151,10 @@ export default function ZKProofModal({
 
             <div className={styles.stepsList}>
               {[
-                { label: 'Conectando à carteira', threshold: 20 },
-                { label: 'Verificando saldo', threshold: 40 },
-                { label: 'Gerando commitment', threshold: 60 },
-                { label: 'Calculando prova', threshold: 80 },
+                { label: 'Connecting to wallet', threshold: 20 },
+                { label: 'Verifying balance', threshold: 40 },
+                { label: 'Generating commitment', threshold: 60 },
+                { label: 'Calculating proof', threshold: 80 },
               ].map((step, index) => (
                 <div
                   key={index}
@@ -180,19 +180,19 @@ export default function ZKProofModal({
               <IoCheckmarkCircle size={120} color="#4ADE80" />
             </div>
 
-            <h2 className={styles.successTitle}>Prova Gerada! ✨</h2>
-            <p className={styles.successSubtitle}>Verificação concluída com sucesso</p>
+            <h2 className={styles.successTitle}>Proof Generated! ✨</h2>
+            <p className={styles.successSubtitle}>Verification completed successfully</p>
 
             <div className={styles.proofCard}>
-              <div className={styles.proofLabel}>Prova ZK</div>
+              <div className={styles.proofLabel}>ZK Proof</div>
               <div className={styles.proofHash}>zk_0x4a7b...9f3c</div>
               <div className={styles.proofDetails}>
-                Válido até: {new Date(Date.now() + 3600000).toLocaleString('pt-BR')}
+                Valid until: {new Date(Date.now() + 3600000).toLocaleString('en-US')}
               </div>
             </div>
 
             <button className={styles.completeButton} onClick={handleComplete}>
-              <span className={styles.completeButtonText}>Continuar Registro</span>
+              <span className={styles.completeButtonText}>Continue Registration</span>
               <IoArrowForward size={24} />
             </button>
           </div>

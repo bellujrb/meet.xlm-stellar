@@ -41,7 +41,7 @@ export default function RegisterSuccessModal({
           </div>
 
           <div className={styles.textContainer}>
-            <h2 className={styles.successTitle}>Registrado! 🎉</h2>
+            <h2 className={styles.successTitle}>Registered! 🎉</h2>
             <div className={styles.eventNameCard}>
               <span className={styles.eventName}>{eventName}</span>
             </div>
@@ -53,13 +53,13 @@ export default function RegisterSuccessModal({
                 <div className={styles.iconCircle}>
                   <IoShieldCheckmark size={24} />
                 </div>
-                <span className={styles.infoText}>Prova ZK verificada com sucesso</span>
+                <span className={styles.infoText}>ZK Proof verified successfully</span>
               </div>
             </div>
           )}
 
           <button className={styles.viewButton} onClick={onClose}>
-            <span className={styles.viewButtonText}>Ver Evento</span>
+            <span className={styles.viewButtonText}>View Event</span>
             <IoArrowForward size={24} />
           </button>
         </div>

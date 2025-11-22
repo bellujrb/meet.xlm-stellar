@@ -60,16 +60,28 @@ O app estará disponível em `http://localhost:5173`
 
 ## 📱 PWA (Progressive Web App)
 
-Este app é um PWA completo, o que significa que você pode:
-
-1. **Instalar no dispositivo**: Ao acessar o app no navegador, você verá uma opção para "Instalar app"
-2. **Funcionar offline**: O service worker permite que o app funcione mesmo sem conexão
-3. **Experiência nativa**: O app se comporta como um app nativo quando instalado
+Este app é um PWA completo! Veja [PWA_INSTALL.md](./PWA_INSTALL.md) para instruções detalhadas de instalação.
 
 ### Instalando o PWA
 
-- **Desktop**: Procure pelo ícone de instalação na barra de endereços do navegador
-- **Mobile**: Use a opção "Adicionar à tela inicial" no menu do navegador
+**Desktop (Chrome/Edge):**
+1. Abra o app no navegador
+2. Procure pelo ícone de instalação na barra de endereços
+3. Clique em "Instalar"
+
+**Mobile (Android):**
+1. Abra no Chrome
+2. Menu → "Adicionar à tela inicial"
+
+**Mobile (iOS):**
+1. Abra no Safari
+2. Compartilhar → "Adicionar à Tela de Início"
+
+### Gerar Ícones PWA
+
+Os ícones PWA (192x192 e 512x512 PNG) precisam ser gerados. Veja [scripts/generate-pwa-icons.md](./scripts/generate-pwa-icons.md) para instruções.
+
+**Nota:** Por enquanto, o app funciona sem os ícones PNG, mas é recomendado gerá-los para melhor experiência.
 
 ## 🔑 Autenticação
 
@@ -183,4 +195,3 @@ Este projeto está sob a licença MIT.
 ## 👥 Time
 
 Desenvolvido para o Stellar Hack+ Buenos Aires 2024
-

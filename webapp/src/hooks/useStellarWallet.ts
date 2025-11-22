@@ -28,7 +28,7 @@ export function useStellarWallet(enabled: boolean) {
       setPublicKey(keypair.publicKey());
       setSecretKey(keypair.secret());
     } catch (err) {
-      const e = err instanceof Error ? err : new Error('Erro ao criar carteira Stellar');
+      const e = err instanceof Error ? err : new Error('Error creating Stellar wallet');
       setError(e);
     } finally {
       setIsLoading(false);

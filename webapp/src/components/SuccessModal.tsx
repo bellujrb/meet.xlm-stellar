@@ -41,7 +41,7 @@ export default function SuccessModal({
           </div>
 
           <div className={styles.textContainer}>
-            <h2 className={styles.successTitle}>Evento Criado! 🎉</h2>
+            <h2 className={styles.successTitle}>Event Created! 🎉</h2>
             <div className={styles.eventNameCard}>
               <span className={styles.eventName}>{eventName}</span>
             </div>
@@ -57,7 +57,7 @@ export default function SuccessModal({
           </div>
 
           <button className={styles.viewButton} onClick={onClose}>
-            <span className={styles.viewButtonText}>Ver Página do Evento</span>
+            <span className={styles.viewButtonText}>View Event Page</span>
             <IoArrowForward size={24} />
           </button>
         </div>

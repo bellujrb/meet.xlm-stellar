@@ -1,4 +1,3 @@
-import React from 'react';
 import { IoTimeOutline, IoLocationOutline } from 'react-icons/io5';
 import { Event } from '../types';
 import styles from './EventCard.module.css';
@@ -37,7 +36,7 @@ export default function EventCard({
         <img src={image} alt={title} className={styles.eventImage} />
         {confirmed && (
           <div className={styles.confirmBadge}>
-            <span className={styles.confirmBadgeText}>Confir...</span>
+            <span className={styles.confirmBadgeText}>Confirmed</span>
           </div>
         )}
       </div>

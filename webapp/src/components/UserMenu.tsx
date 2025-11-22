@@ -13,7 +13,7 @@ export default function UserMenu({ onLogout, stellarAddress }: UserMenuProps) {
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
 
   const displayName = 'User';
-  const walletAddress = stellarAddress ? `${stellarAddress.slice(0, 6)}…${stellarAddress.slice(-4)}` : 'Carteira';
+  const walletAddress = stellarAddress ? `${stellarAddress.slice(0, 6)}…${stellarAddress.slice(-4)}` : 'Wallet';
 
   useEffect(() => {
     let cancelled = false;
@@ -84,7 +84,7 @@ export default function UserMenu({ onLogout, stellarAddress }: UserMenuProps) {
             </div>
 
             <div className={styles.section}>
-              <div className={styles.sectionLabel}>Carteira</div>
+              <div className={styles.sectionLabel}>Wallet</div>
               <div className={styles.badgesRow}>
                 <div className={`${styles.badge} ${styles.badgeYellow}`}>
                   <IoPlanet size={14} />
