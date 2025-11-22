@@ -95,7 +95,9 @@ class ApiClient {
       throw new Error(errorMessage);
     }
 
-    return response.json();
+    const data = await response.json();
+    // Supabase Edge Functions return data directly (not wrapped in 'data' property)
+    return data as T;
   }
 
   async createEvent(
@@ -145,6 +147,39 @@ class ApiClient {
     });
 
     return this.handleResponse<RegisterAttendanceResponse>(response);
+  }
+
+  async getEvent(
+    eventId: string,
+    walletAddress?: string
+  ): Promise<ListEventsResponse['events'][0]> {
+    const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/get-event?event_id=${eventId}`, {
+      method: 'GET',
+      headers: this.getHeaders(walletAddress),
+    });
+
+    return this.handleResponse<ListEventsResponse['events'][0]>(response);
+  }
+
+  async listUserEvents(
+    walletAddress: string,
+    options?: {
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<ListEventsResponse> {
+    const params = new URLSearchParams();
+    if (options?.limit) params.append('limit', options.limit.toString());
+    if (options?.offset) params.append('offset', options.offset.toString());
+
+    const url = `${SUPABASE_FUNCTIONS_URL}/list-user-events${params.toString() ? `?${params.toString()}` : ''}`;
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: this.getHeaders(walletAddress),
+    });
+
+    return this.handleResponse<ListEventsResponse>(response);
   }
 
   // Helper to convert API event to app Event type

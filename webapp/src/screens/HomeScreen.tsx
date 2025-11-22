@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { IoSearch } from 'react-icons/io5';
 import EventCard from '../components/EventCard';
 import Header from '../components/Header';
@@ -8,7 +8,7 @@ import BottomNavigation from '../components/BottomNavigation';
 import SuccessModal from '../components/SuccessModal';
 import ZKProofModal from '../components/ZKProofModal';
 import RegisterSuccessModal from '../components/RegisterSuccessModal';
-// Mock data removed - will be replaced with API calls
+import { apiClient } from '../services/api';
 import { TabName, Event } from '../types';
 import styles from './HomeScreen.module.css';
 import SearchScreen from './SearchScreen';
@@ -34,9 +34,32 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
   const [showRegisterSuccess, setShowRegisterSuccess] = useState(false);
   const [selectedEventForRegister, setSelectedEventForRegister] = useState<Event | null>(null);
   const { publicKey: stellarAddress, disconnect } = useStellarWallet(true);
+  const [confirmedEvents, setConfirmedEvents] = useState<Event[]>([]);
+  const [loadingEvents, setLoadingEvents] = useState(false);
 
-  // TODO: Replace with API call to fetch user's confirmed events
-  const confirmedEvents: Event[] = [];
+  // Fetch user's events
+  useEffect(() => {
+    const fetchUserEvents = async () => {
+      if (!stellarAddress) {
+        setConfirmedEvents([]);
+        return;
+      }
+
+      setLoadingEvents(true);
+      try {
+        const response = await apiClient.listUserEvents(stellarAddress);
+        const events = response.events.map(apiEvent => apiClient.convertApiEventToEvent(apiEvent));
+        setConfirmedEvents(events);
+      } catch (error) {
+        console.error('Error fetching user events:', error);
+        setConfirmedEvents([]);
+      } finally {
+        setLoadingEvents(false);
+      }
+    };
+
+    fetchUserEvents();
+  }, [stellarAddress]);
 
   const handleEventPress = (event: Event) => {
     setSelectedEvent(event);
@@ -95,10 +118,27 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
     setShowRegisterSuccess(true);
   };
 
-  const handleRegisterComplete = () => {
+  const handleRegisterComplete = async () => {
     setShowRegisterSuccess(false);
-    if (selectedEventForRegister) {
-      selectedEventForRegister.isRegistered = true;
+    if (selectedEventForRegister && stellarAddress) {
+      try {
+        await apiClient.registerAttendance(selectedEventForRegister.id, stellarAddress);
+        // Refresh user events
+        const response = await apiClient.listUserEvents(stellarAddress);
+        const events = response.events.map(apiEvent => apiClient.convertApiEventToEvent(apiEvent));
+        setConfirmedEvents(events);
+        // Update selected event
+        const updatedEvent = events.find(e => e.id === selectedEventForRegister.id);
+        if (updatedEvent) {
+          setSelectedEvent(updatedEvent);
+          setSelectedEventForRegister(updatedEvent);
+        } else {
+          selectedEventForRegister.isRegistered = true;
+        }
+      } catch (error) {
+        console.error('Error registering attendance:', error);
+        alert(error instanceof Error ? error.message : 'Failed to register attendance. Please try again.');
+      }
     }
   };
 
@@ -130,7 +170,12 @@ export default function HomeScreen({ onLogout }: HomeScreenProps) {
               </button>
             </div>
 
-            {confirmedEvents.length > 0 ? (
+            {loadingEvents ? (
+              <div className={styles.emptyEventsState}>
+                <div className={styles.emptyEventsEmoji}>⏳</div>
+                <p className={styles.emptyEventsText}>Loading your events...</p>
+              </div>
+            ) : confirmedEvents.length > 0 ? (
               confirmedEvents.map((event) => (
                 <EventCard
                   key={event.id}

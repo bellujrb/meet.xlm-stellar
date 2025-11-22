@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { IoSearch, IoCloseCircle, IoLogOutOutline } from 'react-icons/io5';
 import EventCard from '../components/EventCard';
+import { apiClient } from '../services/api';
+import { useStellarWallet } from '../hooks/useStellarWallet';
 import { Event } from '../types';
 import styles from './SearchScreen.module.css';
 
@@ -15,13 +17,40 @@ interface SearchScreenProps {
 export default function SearchScreen({
   visible,
   onEventPress,
-  availableEvents,
+  availableEvents: _availableEvents,
   onLogout,
 }: SearchScreenProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [availableEvents, setAvailableEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { publicKey: stellarAddress } = useStellarWallet(true);
 
   const cities = ['All', 'Buenos Aires', 'São Paulo', 'Online'];
+
+  // Fetch events from API
+  useEffect(() => {
+    const fetchEvents = async () => {
+      if (!visible) return;
+
+      setLoading(true);
+      try {
+        const response = await apiClient.listEvents({
+          walletAddress: stellarAddress || undefined,
+          limit: 100,
+        });
+        const events = response.events.map(apiEvent => apiClient.convertApiEventToEvent(apiEvent));
+        setAvailableEvents(events);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        setAvailableEvents([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, [visible, stellarAddress]);
 
   const filteredEvents = availableEvents.filter((event) => {
     const matchesSearch =
@@ -88,11 +117,15 @@ export default function SearchScreen({
 
         <div className={styles.eventsSection}>
           <h3 className={styles.sectionTitle}>
-            {filteredEvents.length} Event{filteredEvents.length !== 1 ? 's' : ''}{' '}
-            {searchQuery ? `for "${searchQuery}"` : 'Available'}  
+            {loading ? 'Loading...' : `${filteredEvents.length} Event${filteredEvents.length !== 1 ? 's' : ''} ${searchQuery ? `for "${searchQuery}"` : 'Available'}`}
           </h3>
 
-          {filteredEvents.length > 0 ? (
+          {loading ? (
+            <div className={styles.emptyState}>
+              <div className={styles.emptyEmoji}>⏳</div>
+              <div className={styles.emptyText}>Loading events...</div>
+            </div>
+          ) : filteredEvents.length > 0 ? (
             filteredEvents.map((event) => (
               <EventCard
                 key={event.id}

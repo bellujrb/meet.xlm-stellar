@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { IoClose, IoImage, IoCalendar, IoLocation, IoShieldCheckmark } from 'react-icons/io5';
+import { apiClient } from '../services/api';
+import { useStellarWallet } from '../hooks/useStellarWallet';
 import styles from './CreateEventScreen.module.css';
 
 interface CreateEventScreenProps {
@@ -13,16 +15,21 @@ export default function CreateEventScreen({
   onClose,
   onSuccess,
 }: CreateEventScreenProps) {
+  const { publicKey: stellarAddress } = useStellarWallet(true);
   const [eventName, setEventName] = useState('');
   const [startDate, setStartDate] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
+  const [organizer, setOrganizer] = useState('');
+  const [organizerIcon, setOrganizerIcon] = useState('🎉');
   const [requireXLM, setRequireXLM] = useState(false);
   const [xlmAmount, setXlmAmount] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
   const [errors, setErrors] = useState({
     eventName: '',
     startDate: '',
     location: '',
+    organizer: '',
   });
 
   useEffect(() => {
@@ -36,11 +43,12 @@ export default function CreateEventScreen({
     };
   }, [visible]);
 
-  const handleCreateEvent = () => {
+  const handleCreateEvent = async () => {
     const newErrors = {
       eventName: '',
       startDate: '',
       location: '',
+      organizer: '',
     };
 
     let hasError = false;
@@ -60,23 +68,61 @@ export default function CreateEventScreen({
       hasError = true;
     }
 
+    if (!organizer.trim()) {
+      newErrors.organizer = 'Organizer is required';
+      hasError = true;
+    }
+
+    if (!stellarAddress) {
+      alert('Please connect your wallet first');
+      return;
+    }
+
     setErrors(newErrors);
 
     if (hasError) {
       return;
     }
 
-    onSuccess(eventName, startDate);
-    
-    setEventName('');
-    setStartDate('');
-    setLocation('');
-    setDescription('');
-    setRequireXLM(false);
-    setXlmAmount('');
-    setErrors({ eventName: '', startDate: '', location: '' });
-    
-    onClose();
+    setIsCreating(true);
+    try {
+      // Convert datetime-local to ISO string
+      const startTime = new Date(startDate).toISOString();
+      
+      const response = await apiClient.createEvent(
+        {
+          title: eventName.trim(),
+          organizer: organizer.trim(),
+          organizerIcon: organizerIcon,
+          startTime,
+          location: location.trim(),
+          description: description.trim() || undefined,
+          requiresXlm: requireXLM,
+          xlmMinimum: requireXLM && xlmAmount ? parseFloat(xlmAmount) : undefined,
+        },
+        stellarAddress
+      );
+
+      onSuccess(response.title, new Date(response.start_time).toLocaleDateString());
+      
+      // Reset form
+      setEventName('');
+      setStartDate('');
+      setLocation('');
+      setDescription('');
+      setOrganizer('');
+      setOrganizerIcon('🎉');
+      setRequireXLM(false);
+      setXlmAmount('');
+      setErrors({ eventName: '', startDate: '', location: '', organizer: '' });
+      
+      onClose();
+    } catch (error) {
+      console.error('Error creating event:', error);
+      alert(error instanceof Error ? error.message : 'Failed to create event. Please try again.');
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   if (!visible) return null;
@@ -122,6 +168,34 @@ export default function CreateEventScreen({
               {errors.eventName && (
                 <div className={styles.errorContainer}>
                   <span className={styles.errorText}>{errors.eventName}</span>
+                </div>
+              )}
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label className={styles.label}>Organizer 🏢</label>
+              <div className={styles.organizerInput}>
+                <input
+                  type="text"
+                  className={styles.organizerIconInput}
+                  placeholder="🎉"
+                  value={organizerIcon}
+                  onChange={(e) => setOrganizerIcon(e.target.value)}
+                  maxLength={2}
+                />
+                <input
+                  className={`${styles.input} ${styles.organizerNameInput} ${errors.organizer ? styles.inputError : ''}`}
+                  placeholder="Ex: Stellar Foundation"
+                  value={organizer}
+                  onChange={(e) => {
+                    setOrganizer(e.target.value);
+                    setErrors({ ...errors, organizer: '' });
+                  }}
+                />
+              </div>
+              {errors.organizer && (
+                <div className={styles.errorContainer}>
+                  <span className={styles.errorText}>{errors.organizer}</span>
                 </div>
               )}
             </div>
@@ -236,9 +310,12 @@ export default function CreateEventScreen({
           <button
             className={styles.createButton}
             onClick={handleCreateEvent}
+            disabled={isCreating}
           >
             <IoShieldCheckmark size={24} />
-            <span className={styles.createButtonText}>Create Event</span>
+            <span className={styles.createButtonText}>
+              {isCreating ? 'Creating...' : 'Create Event'}
+            </span>
           </button>
         </div>
       </div>

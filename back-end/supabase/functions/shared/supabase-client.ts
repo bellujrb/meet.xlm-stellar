@@ -7,11 +7,12 @@ export function getSupabaseClient() {
     return _client
   }
 
-  const url = Deno.env.get("DB_URL")
-  const serviceRoleKey = Deno.env.get("SERVICE_ROLE_KEY")
+  // Try standard Supabase environment variables first, then fallback to custom ones
+  const url = Deno.env.get("SUPABASE_URL") || Deno.env.get("DB_URL")
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SERVICE_ROLE_KEY")
 
   if (!url || !serviceRoleKey) {
-    throw new Error("Missing DB_URL or SERVICE_ROLE_KEY")
+    throw new Error("Missing SUPABASE_URL/DB_URL or SUPABASE_SERVICE_ROLE_KEY/SERVICE_ROLE_KEY")
   }
 
   _client = createSupabaseClient(url, serviceRoleKey)
@@ -19,11 +20,12 @@ export function getSupabaseClient() {
 }
 
 export function createSupabaseAnonClient() {
-  const url = Deno.env.get("DB_URL")
-  const anonKey = Deno.env.get("ANON_KEY")
+  // Try standard Supabase environment variables first, then fallback to custom ones
+  const url = Deno.env.get("SUPABASE_URL") || Deno.env.get("DB_URL")
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("ANON_KEY")
 
   if (!url || !anonKey) {
-    throw new Error("Missing DB_URL or ANON_KEY")
+    throw new Error("Missing SUPABASE_URL/DB_URL or SUPABASE_ANON_KEY/ANON_KEY")
   }
 
   return createSupabaseClient(url, anonKey)
