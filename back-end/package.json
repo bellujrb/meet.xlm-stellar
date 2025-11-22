@@ -1,42 +1,5 @@
 {
-  "name": "meet-xlm-backend",
-  "version": "1.0.0",
-  "description": "Backend API for Meet.XLM - Stellar-native proof-of-attendance protocol",
-  "main": "dist/main.js",
-  "scripts": {
-    "build": "tsc",
-    "start": "node dist/main.js",
-    "start:dev": "ts-node src/main.ts",
-    "lint": "eslint src --ext .ts",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.ts\""
-  },
-  "keywords": ["stellar", "events", "attendance", "badges", "poap"],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "@nestjs/common": "^11.1.9",
-    "@nestjs/config": "^4.0.2",
-    "@nestjs/core": "^11.1.9",
-    "@nestjs/platform-express": "^11.1.9",
-    "@nestjs/swagger": "^11.2.3",
-    "@supabase/supabase-js": "^2.83.0",
-    "class-transformer": "^0.5.1",
-    "class-validator": "^0.14.2",
-    "dotenv": "^17.2.3",
-    "pino": "^10.1.0",
-    "pino-pretty": "^13.1.2",
-    "stellar-sdk": "^12.3.0",
-    "zod": "^4.1.12"
-  },
-  "devDependencies": {
-    "@types/node": "^24.10.1",
-    "@typescript-eslint/eslint-plugin": "^8.47.0",
-    "@typescript-eslint/parser": "^8.47.0",
-    "eslint": "^9.39.1",
-    "prettier": "^3.6.2",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "supabase": "^2.58.5"
   }
 }
-

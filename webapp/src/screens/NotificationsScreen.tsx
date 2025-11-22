@@ -37,9 +37,9 @@ export default function NotificationsScreen({
             <h3 className={styles.emptyTitle}>No notifications</h3>
             <p className={styles.emptySubtitle}>
               You will receive notifications about your events here
-            </p>
-          </div>
-          <div className={styles.infoCards}>
+              </p>
+            </div>
+            <div className={styles.infoCards}>
               <div className={styles.infoCard}>
                 <div className={styles.infoCardIcon}>
                   <span className={styles.infoCardEmoji}>🎉</span>
@@ -70,9 +70,9 @@ export default function NotificationsScreen({
                 </div>
               </div>
             </div>
+          </div>
         </div>
       </div>
-    </div>
   );
 }
 

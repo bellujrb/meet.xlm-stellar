@@ -1,0 +1,17 @@
+# Supabase Configuration
+
+[functions."create-event"]
+verify_jwt = false
+
+[functions."list-events"]
+verify_jwt = false
+
+[functions."register-attendance"]
+verify_jwt = false
+
+[functions."get-event"]
+verify_jwt = false
+
+[functions."list-user-events"]
+verify_jwt = false
+
