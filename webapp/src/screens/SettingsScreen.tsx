@@ -1,4 +1,3 @@
-import React from 'react';
 import { IoLogOutOutline, IoCopyOutline, IoQrCodeOutline, IoChevronForward } from 'react-icons/io5';
 import styles from './SettingsScreen.module.css';
 
@@ -15,7 +14,6 @@ const UUID = 'c90e3ae4-5be1-41e9-9375-737674bc34e1';
 
 export default function SettingsScreen({
   visible,
-  onClose,
   onLogout,
 }: SettingsScreenProps) {
   const handleCopyAddress = () => {

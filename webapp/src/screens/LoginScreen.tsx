@@ -8,7 +8,7 @@ interface LoginScreenProps {
   onLogout?: () => void;
 }
 
-export default function LoginScreen({ onLogin, onLogout }: LoginScreenProps) {
+export default function LoginScreen({ onLogin }: LoginScreenProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { connect, isLoading, error, publicKey, isConnected } = useStellarWallet(true);
 
@@ -70,12 +70,6 @@ export default function LoginScreen({ onLogin, onLogout }: LoginScreenProps) {
             {isLoading ? 'Connecting...' : 'Connect Wallet'}
           </span>
         </button>
-
-        {onLogout && (
-          <button className={styles.secondaryButton} onClick={onLogout}>
-            <span className={styles.secondaryButtonText}>Switch account</span>
-          </button>
-        )}
 
         <div className={styles.statusCard}>
           <div className={styles.statusLabel}>Status</div>

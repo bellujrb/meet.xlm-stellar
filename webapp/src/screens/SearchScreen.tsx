@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { IoSearch, IoCloseCircle, IoLogOutOutline } from 'react-icons/io5';
 import EventCard from '../components/EventCard';
 import { Event } from '../types';
@@ -14,7 +14,6 @@ interface SearchScreenProps {
 
 export default function SearchScreen({
   visible,
-  onClose,
   onEventPress,
   availableEvents,
   onLogout,

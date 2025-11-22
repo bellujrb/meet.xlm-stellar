@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { IoClose, IoCheckmarkCircle, IoTime, IoArrowForward } from 'react-icons/io5';
 import styles from './SuccessModal.module.css';
 
