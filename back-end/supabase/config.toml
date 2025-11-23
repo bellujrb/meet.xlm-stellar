@@ -46,3 +46,6 @@ verify_jwt = false
 [functions."list-user-events"]
 verify_jwt = false
 
+[functions."verify"]
+verify_jwt = false
+

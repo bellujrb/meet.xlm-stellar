@@ -5,6 +5,7 @@ import { createLogger } from "../shared/logger.ts"
 import { extractWalletAddress, validateWalletAddress } from "../shared/auth.ts"
 import { createErrorResponse, createSuccessResponse, ErrorCode, AppError } from "../shared/error-handler.ts"
 import { handleCorsPreFlight } from "../shared/cors.ts"
+import { addHashToSoroban } from "../shared/soroban-client.ts"
 
 const logger = createLogger("verify")
 
@@ -170,19 +171,48 @@ serve(async (req: Request) => {
     }
 
     // ###############################################################
-    console.log("7. return success")
+    console.log("7. send hash to Soroban contract")
+    
+    // Send hash to Soroban contract (non-blocking - don't fail if this errors)
+    let sorobanTxHash: string | undefined
+    try {
+      const sorobanResult = await addHashToSoroban(zkId, proofHash)
+      if (sorobanResult.success && sorobanResult.txHash) {
+        sorobanTxHash = sorobanResult.txHash
+        await logger.info("Hash sent to Soroban contract successfully", {
+          zkId,
+          sorobanTxHash,
+        })
+      } else {
+        await logger.warn("Failed to send hash to Soroban contract", {
+          zkId,
+          error: sorobanResult.error,
+        })
+      }
+    } catch (sorobanError) {
+      // Log error but don't fail the request
+      await logger.error("Error sending hash to Soroban contract", {
+        zkId,
+        error: sorobanError instanceof Error ? sorobanError.message : String(sorobanError),
+      }, sorobanError instanceof Error ? sorobanError : undefined)
+    }
+
+    // ###############################################################
+    console.log("8. return success")
     
     await logger.info("ZK proof saved successfully", {
       zkId,
       walletAddress: auth.walletAddress,
       proofHash,
+      sorobanTxHash,
     })
 
-    // Return response with generated hash
+    // Return response with generated hash and Soroban transaction hash if available
     const response = {
       message: "Proof verified and saved successfully!",
       verified: true,
       txHash: proofHash, // Return our generated hash as txHash
+      sorobanTxHash: sorobanTxHash || undefined, // Soroban transaction hash if available
       zk_id: zkId,
       saved_at: savedProof.created_at,
     }
