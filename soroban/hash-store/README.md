@@ -1,4 +1,4 @@
-# HashStore Soroban Contract
+# HashStore Soroban Contract CDDCZS36ZERM7L2C4H6CC3PYYQPLWR357BOEJROMTL4X5WLVDNO4GSLI
 
 Contrato Soroban para armazenar hashes de provas ZK relacionadas a eventos.
 
