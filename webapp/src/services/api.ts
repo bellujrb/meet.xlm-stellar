@@ -183,6 +183,29 @@ class ApiClient {
   }
 
   // Helper to convert API event to app Event type
+  async verifyZkProof(
+    proofB64: string,
+    publicInputs: number[],
+    verificationKey: Uint8Array,
+    threshold: number,
+    isValid: boolean,
+    walletAddress: string
+  ): Promise<{ zk_id: string; verified: boolean; zkverify_tx_hash?: string; saved_at: string }> {
+    const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/verify`, {
+      method: 'POST',
+      headers: this.getHeaders(walletAddress),
+      body: JSON.stringify({
+        proofB64,
+        publicInputs,
+        vk: Array.from(verificationKey),
+        threshold,
+        isValid,
+      }),
+    });
+
+    return this.handleResponse<{ zk_id: string; verified: boolean; zkverify_tx_hash?: string; saved_at: string }>(response);
+  }
+
   convertApiEventToEvent(apiEvent: ListEventsResponse['events'][0]): Event {
     return {
       id: apiEvent.event_id,

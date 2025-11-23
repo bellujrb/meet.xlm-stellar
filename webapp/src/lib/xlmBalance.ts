@@ -1,7 +1,5 @@
 // Função para obter o saldo XLM do usuário na rede Stellar
-// Usando Stellar SDK para consultar o Horizon API
-
-import StellarSdk from 'stellar-sdk';
+// Usando fetch direto para consultar o Horizon API
 
 // Servidor Horizon da rede testnet Stellar
 const HORIZON_SERVER = 'https://horizon-testnet.stellar.org';
@@ -13,34 +11,40 @@ const HORIZON_SERVER = 'https://horizon-testnet.stellar.org';
  */
 export async function getXlmBalance(address: string): Promise<number> {
   try {
-    const server = new StellarSdk.Horizon.Server(HORIZON_SERVER);
+    // Use the exact same method as UserMenu (which is working)
+    const res = await fetch(`${HORIZON_SERVER}/accounts/${address}`);
     
-    // Carrega a conta do Stellar
-    const account = await server.loadAccount(address);
-    
-    // Encontra o saldo XLM nativo
-    const xlmBalance = account.balances.find(
-      (balance: any) => balance.asset_type === 'native'
-    );
-    
-    if (!xlmBalance) {
+    if (!res.ok) {
+      if (res.status === 404) {
+        console.log('Account not found:', address);
+        return 0;
+      }
+      console.error('Horizon API error:', res.status, res.statusText);
       return 0;
     }
     
-    // Converte para número decimal
-    const balanceInXlm = parseFloat(xlmBalance.balance);
+    const data = await res.json();
+    
+    // Find native XLM balance (exact same logic as UserMenu)
+    const native = data.balances?.find((b: any) => b.asset_type === 'native');
+    
+    if (!native || !native.balance) {
+      console.log('No native balance found for account:', address);
+      return 0;
+    }
+    
+    // Convert balance string to number (exact same as UserMenu)
+    const balanceInXlm = parseFloat(native.balance);
+    
+    console.log('✅ XLM Balance fetched successfully:', {
+      address,
+      rawBalance: native.balance,
+      balanceInXlm,
+    });
     
     return balanceInXlm;
-  } catch (error) {
-    console.error('Error getting XLM balance:', error);
-    
-    // Se a conta não existe (404), retorna 0
-    if (error instanceof Error && error.message.includes('404')) {
-      return 0;
-    }
-    
-    // Em caso de erro, retorna 0 (conta pode não existir ainda)
-    console.warn('Failed to fetch XLM balance, returning 0');
+  } catch (err) {
+    console.warn('Stellar balance fetch failed', err);
     return 0;
   }
 }

@@ -35,10 +35,32 @@ export const generateProof = async (
     
     onProgress?.(20, "Loading circuit...");
     const res = await fetch("/zk_noir_circuit.json");
+    
     if (!res.ok) {
-      throw new Error(`Error loading circuit: ${res.statusText}`);
+      if (res.status === 404) {
+        throw new Error('Circuit file not found. Please compile the circuit with "nargo compile" and copy it to public/zk_noir_circuit.json');
+      }
+      const errorText = await res.text();
+      console.error('Circuit fetch error:', res.status, errorText.substring(0, 200));
+      throw new Error(`Error loading circuit: ${res.status} ${res.statusText}`);
     }
-    const circuit = await res.json();
+    
+    // Check if response is JSON
+    const contentType = res.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await res.text();
+      console.error('Expected JSON but got:', contentType, text.substring(0, 200));
+      throw new Error('Circuit file format is invalid. Expected JSON but got HTML. Please check if the circuit file exists in public/zk_noir_circuit.json');
+    }
+    
+    let circuit;
+    try {
+      circuit = await res.json();
+    } catch (parseError) {
+      const text = await res.text();
+      console.error('JSON parse error. Response:', text.substring(0, 500));
+      throw new Error('Failed to parse circuit JSON. The file may be corrupted or not a valid JSON file.');
+    }
     
     console.log('📦 Circuit loaded:', {
       noir_version: circuit.noir_version,

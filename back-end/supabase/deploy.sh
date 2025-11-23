@@ -66,7 +66,7 @@ echo ""
 echo "🚀 Fazendo deploy das functions..."
 echo ""
 
-FUNCTIONS=("create-event" "list-events" "get-event" "list-user-events" "register-attendance")
+FUNCTIONS=("create-event" "list-events" "get-event" "list-user-events" "register-attendance" "verify")
 
 for func in "${FUNCTIONS[@]}"; do
   echo "📤 Deploying $func..."
@@ -87,11 +87,15 @@ echo "      - DB_URL: URL do seu banco de dados"
 echo "      - SERVICE_ROLE_KEY: Chave de serviço do Supabase"
 echo "      - ANON_KEY: Chave anônima do Supabase (opcional)"
 echo ""
-echo "   2. Teste as functions usando os endpoints:"
+echo "   2. Configure a variável ZKVERIFY_SEED (opcional, para integração com zkVerify):"
+echo "      - ZKVERIFY_SEED: Seed phrase da conta zkVerify"
+echo ""
+echo "   3. Teste as functions usando os endpoints:"
 echo "      - POST /functions/v1/create-event"
 echo "      - GET /functions/v1/list-events"
 echo "      - GET /functions/v1/get-event"
 echo "      - GET /functions/v1/list-user-events"
 echo "      - POST /functions/v1/register-attendance"
+echo "      - POST /functions/v1/verify"
 echo ""
 

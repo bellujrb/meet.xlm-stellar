@@ -52,6 +52,7 @@ export default defineConfig({
     global: 'globalThis',
   },
   optimizeDeps: {
+    exclude: ['@aztec/bb.js', '@noir-lang/noir_js'],
     esbuildOptions: {
       define: {
         global: 'globalThis',

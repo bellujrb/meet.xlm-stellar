@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { IoClose, IoShieldCheckmark, IoLockClosed, IoFlash, IoKey, IoCheckmark, IoArrowForward, IoCheckmarkCircle } from 'react-icons/io5';
 import { useStellarWallet } from '../hooks/useStellarWallet';
 import { getXlmBalance } from '../lib/xlmBalance';
-import { generateProof, generateRandomNonce, type ProofResult } from '../lib/zkProof';
+import { generateProof, generateRandomNonce } from '../lib/zkProof';
+import { apiClient } from '../services/api';
 import styles from './ZKProofModal.module.css';
 
 interface ZKProofModalProps {
@@ -21,7 +22,7 @@ export default function ZKProofModal({
   const [stage, setStage] = useState<'intro' | 'generating' | 'success' | 'error'>('intro');
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState('');
-  const [proofResult, setProofResult] = useState<ProofResult | null>(null);
+  const [verifyResponse, setVerifyResponse] = useState<{ zk_id: string; verified: boolean; zkverify_tx_hash?: string; saved_at: string } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const { publicKey: stellarAddress } = useStellarWallet(true);
 
@@ -30,7 +31,7 @@ export default function ZKProofModal({
       setStage('intro');
       setProgress(0);
       setProgressText('');
-      setProofResult(null);
+      setVerifyResponse(null);
       setErrorMessage('');
     }
   }, [visible]);
@@ -50,7 +51,10 @@ export default function ZKProofModal({
       // Step 1: Get XLM balance
       setProgress(10);
       setProgressText('Connecting to wallet...');
+      
+      console.log('🔍 ZKProofModal - Fetching balance for:', stellarAddress);
       const balance = await getXlmBalance(stellarAddress);
+      console.log('💰 ZKProofModal - Balance received:', balance, 'XLM');
       
       if (balance < xlmRequired) {
         throw new Error(`Insufficient balance. Required: ${xlmRequired} XLM, You have: ${balance.toFixed(2)} XLM`);
@@ -77,9 +81,24 @@ export default function ZKProofModal({
         }
       );
 
-      setProofResult(proof);
+      // Step 4: Send proof to backend for verification and zkVerify submission
+      setProgress(95);
+      setProgressText('Submitting proof to zkVerify...');
+      
+      const verifyResponse = await apiClient.verifyZkProof(
+        proof.proofB64,
+        proof.publicInputs,
+        proof.verificationKey,
+        Math.floor(xlmRequired * 10000000), // threshold in stroops
+        proof.isValid,
+        stellarAddress
+      );
+      
+      console.log('✅ Proof verified and saved:', verifyResponse);
+      setVerifyResponse(verifyResponse);
+      
       setProgress(100);
-      setProgressText('Proof generated successfully!');
+      setProgressText('Proof verified and saved successfully!');
       setStage('success');
     } catch (error) {
       console.error('Error generating proof:', error);
@@ -226,17 +245,25 @@ export default function ZKProofModal({
             <h2 className={styles.successTitle}>Proof Generated! ✨</h2>
             <p className={styles.successSubtitle}>Verification completed successfully</p>
 
-            {proofResult && (
+            {verifyResponse && (
               <div className={styles.proofCard}>
-                <div className={styles.proofLabel}>ZK Proof</div>
+                <div className={styles.proofLabel}>ZK Proof ID</div>
                 <div className={styles.proofHash}>
-                  {proofResult.proofB64.slice(0, 20)}...{proofResult.proofB64.slice(-10)}
+                  {verifyResponse.zk_id}
                 </div>
                 <div className={styles.proofDetails}>
-                  {proofResult.isValid ? '✓ Verified locally' : '⚠ Not verified'}
+                  {verifyResponse.verified ? '✓ Verified on zkVerify' : '⚠ Verification pending'}
                 </div>
+                {verifyResponse.zkverify_tx_hash && (
+                  <div className={styles.proofDetails}>
+                    <div className={styles.proofLabel} style={{ fontSize: '12px', marginTop: '8px' }}>zkVerify TX Hash:</div>
+                    <div className={styles.proofHash} style={{ fontSize: '11px', wordBreak: 'break-all' }}>
+                      {verifyResponse.zkverify_tx_hash}
+                    </div>
+                  </div>
+                )}
                 <div className={styles.proofDetails}>
-                  Valid until: {new Date(Date.now() + 3600000).toLocaleString('en-US')}
+                  Saved at: {new Date(verifyResponse.saved_at).toLocaleString('en-US')}
                 </div>
               </div>
             )}
@@ -274,4 +301,5 @@ export default function ZKProofModal({
     </div>
   );
 }
+
 
