@@ -75,3 +75,4 @@ echo ""
 echo "🧪 Teste as functions agora:"
 echo "   cd back-end/supabase && ./test-functions.sh"
 
+

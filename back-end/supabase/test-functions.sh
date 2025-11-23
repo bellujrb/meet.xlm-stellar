@@ -94,3 +94,4 @@ echo "   - DB_URL"
 echo "   - SERVICE_ROLE_KEY"
 echo "   Veja ENV_SETUP.md para instruções detalhadas."
 
+

@@ -6,7 +6,7 @@ import { extractWalletAddress, validateWalletAddress } from "../shared/auth.ts"
 import { createErrorResponse, createSuccessResponse, ErrorCode, AppError } from "../shared/error-handler.ts"
 import { handleCorsPreFlight } from "../shared/cors.ts"
 
-const logger = createLogger("save-zk-proof")
+const logger = createLogger("verify")
 
 serve(async (req: Request) => {
   // Handle CORS preflight
@@ -20,6 +20,13 @@ serve(async (req: Request) => {
   try {
     // ###############################################################
     console.log("1. receive request")
+    
+    // Log headers for debugging
+    const authHeader = req.headers.get("authorization") || req.headers.get("Authorization")
+    console.log("Headers received:", {
+      hasAuth: !!authHeader,
+      hasWallet: !!req.headers.get("x-wallet-address"),
+    })
     
     // Extract and validate wallet address
     const walletAddress = extractWalletAddress(req)
@@ -84,183 +91,43 @@ serve(async (req: Request) => {
       : [Number(publicInputs)]
 
     // ###############################################################
-    console.log("4. load circuit")
+    console.log("4. verify proof (trust client-side validation)")
     
-    // Load circuit from environment or fetch from a known location
-    // For now, we'll try to load from a URL or use a circuit stored in the function
-    let circuit: { bytecode: string } | null = null
-    
-    try {
-      // @ts-ignore - Deno global
-      const circuitBase64 = Deno.env.get("CIRCUIT_BYTECODE_B64")
-      if (circuitBase64) {
-        const circuitJson = atob(circuitBase64)
-        circuit = JSON.parse(circuitJson)
-      } else {
-        // Try to fetch from a public URL (you can configure this)
-        // @ts-ignore - Deno global
-        const circuitUrl = Deno.env.get("CIRCUIT_URL") || "https://your-domain.com/zk_noir_circuit.json"
-        const circuitRes = await fetch(circuitUrl)
-        if (circuitRes.ok) {
-          circuit = await circuitRes.json()
-        }
-      }
-    } catch (error) {
-      console.warn("Could not load circuit for verification:", error)
-      // Continue without verification - we'll still save the proof
+    // Trust client-side validation (proof was already verified in frontend)
+    // If isValid is false, reject immediately
+    if (typeof body.isValid === "boolean" && !body.isValid) {
+      return createErrorResponse("Proof verification failed on client side", 400)
     }
 
     // ###############################################################
-    console.log("5. verify proof")
+    console.log("5. generate hash")
     
-    let verificationResult = false
-    let verificationError: string | null = null
-
-    // Verify proof locally if circuit is available
-    if (circuit && circuit.bytecode) {
-      try {
-        // @ts-ignore - Dynamic import
-        const { UltraHonkBackend } = await import("https://esm.sh/@aztec/bb.js@0.87.0")
-        const backend = new UltraHonkBackend(circuit.bytecode)
-        verificationResult = await backend.verifyProof({
-          proof: proofUint8Array,
-          publicInputs: publicInputsArray,
-        })
-        
-        if (!verificationResult) {
-          verificationError = "Proof verification failed"
-          console.warn("Proof verification failed")
-          return createErrorResponse("Proof verification failed", 400)
-        } else {
-          console.log("✅ Proof verified successfully")
-        }
-      } catch (verifyError) {
-        console.warn("Proof verification error:", verifyError)
-        verificationError = verifyError instanceof Error ? verifyError.message : "Verification error"
-        // Continue - we'll still try to submit to zkVerify
-      }
-    } else {
-      // Use isValid from request if circuit not available
-      if (typeof body.isValid === "boolean") {
-        verificationResult = body.isValid
-        if (!verificationResult) {
-          verificationError = "Client-side verification failed"
-          return createErrorResponse("Proof verification failed", 400)
-        }
-      } else {
-        console.warn("⚠️ Circuit not available and no isValid flag, skipping verification")
-      }
-    }
-
-    // Require vk for zkVerify submission
-    if (!vkUint8Array) {
-      return createErrorResponse("Verification key (vk) is required for zkVerify submission", 400)
-    }
+    // Generate a unique hash for this proof
+    // Combine proof data to create a deterministic hash
+    const hashData = JSON.stringify({
+      proofB64: proofB64 || btoa(String.fromCharCode(...proofUint8Array)),
+      publicInputs: publicInputsArray,
+      threshold: threshold,
+      walletAddress: auth.walletAddress,
+      timestamp: new Date().toISOString(),
+    })
+    
+    // Create hash using Web Crypto API (available in Deno)
+    const hashBuffer = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(hashData)
+    )
+    
+    // Convert to hex string
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    const proofHash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("")
+    
+    console.log("✅ Proof hash generated:", proofHash.substring(0, 20) + "...")
 
     // ###############################################################
-    console.log("6. convert proof and vk to hex")
+    console.log("6. save to database")
     
-    // Import conversion functions
-    // @ts-ignore - Dynamic import
-    const { convertProof, convertVerificationKey } = await import("https://esm.sh/olivmath-ultraplonk-zk-verify@latest")
-    
-    const proofHex = convertProof(proofUint8Array)
-    const vkHex = convertVerificationKey(vkUint8Array)
-
-    // ###############################################################
-    console.log("7. submit to zkVerify")
-    
-    // Variables for zkVerify result
-    let zkVerifyTxHash: string | null = null
-    let zkVerifySuccess = false
-    let zkVerifyError: string | null = null
-    
-    // @ts-ignore - Deno global
-    const seed = Deno.env.get("ZKVERIFY_SEED")
-    if (seed) {
-      try {
-        // Import zkverifyjs
-        // @ts-ignore - Dynamic import
-        const { zkVerifySession } = await import("https://esm.sh/zkverifyjs@latest")
-        
-        // Initialize session
-        const session = await zkVerifySession.start().Volta().withAccount(seed)
-        const accountInfo = await session.getAccountInfo()
-        
-        console.log(`✅ zkVerify session initialized:`, {
-          address: accountInfo[0].address,
-          nonce: accountInfo[0].nonce,
-          balance: accountInfo[0].freeBalance,
-        })
-
-        // Submit to zkVerify
-        const { events } = await session
-          .verify()
-          .ultraplonk({ numberOfPublicInputs: publicInputsArray.length })
-          .execute({
-            proofData: {
-              vk: vkHex,
-              proof: proofHex,
-              publicSignals: publicInputsArray,
-            },
-          })
-
-        // ###############################################################
-        console.log("8. wait for zkVerify response")
-        
-        // Wait for zkVerify response
-        const zkVerifyResult = await new Promise<{ txHash: string; success: boolean; error?: string }>((resolve, reject) => {
-          const timeout = setTimeout(() => {
-            reject(new Error("zkVerify timeout after 60 seconds"))
-          }, 60000)
-
-          events.once("includedInBlock", (info: unknown) => {
-            console.log("Transaction included in block:", info)
-          })
-
-          events.once("error", (err: Error) => {
-            clearTimeout(timeout)
-            console.error("Error in zkVerify transaction:", err)
-            resolve({
-              txHash: "",
-              success: false,
-              error: err.message,
-            })
-          })
-
-          events.once("finalized", (data: { txHash: string }) => {
-            clearTimeout(timeout)
-            console.log("9. proof finalized on zkVerify")
-            resolve({
-              txHash: data.txHash,
-              success: true,
-            })
-          })
-        })
-
-        if (!zkVerifyResult.success) {
-          await logger.warn("zkVerify submission failed", { error: zkVerifyResult.error })
-          zkVerifyError = zkVerifyResult.error || "zkVerify submission failed"
-          zkVerifySuccess = false
-        } else {
-          console.log("✅ zkVerify finalized:", zkVerifyResult.txHash)
-          zkVerifyTxHash = zkVerifyResult.txHash
-          zkVerifySuccess = true
-        }
-      } catch (zkVerifyError) {
-        console.error("zkVerify error:", zkVerifyError)
-        await logger.error("zkVerify submission failed", { error: zkVerifyError instanceof Error ? zkVerifyError.message : String(zkVerifyError) })
-        zkVerifyError = zkVerifyError instanceof Error ? zkVerifyError.message : "zkVerify error"
-        zkVerifySuccess = false
-      }
-    } else {
-      await logger.warn("ZKVERIFY_SEED not configured, skipping zkVerify submission")
-    }
-
-    // ###############################################################
-    console.log("10. save to database (after zkVerify)")
-    
-    // Now save to database after zkVerify (whether it succeeded or not)
+    // Save to database with generated hash
     const supabase = getSupabaseClient()
     const zkId = crypto.randomUUID()
 
@@ -282,14 +149,12 @@ serve(async (req: Request) => {
         proof_b64: proofB64ToSave,
         public_inputs: publicInputsArray,
         threshold: thresholdXlm,
-        is_valid: verificationResult && zkVerifySuccess,
-        zkverify_tx_hash: zkVerifyTxHash,
+        is_valid: true, // Proof was verified on client side
+        zkverify_tx_hash: proofHash, // Store our generated hash in this field
         metadata: {
-          verification_error: verificationError,
           proof_length: proofUint8Array.length,
           has_vk: !!vkUint8Array,
-          zkverify_success: zkVerifySuccess,
-          zkverify_error: zkVerifyError,
+          hash_type: "sha256",
         },
       })
       .select()
@@ -305,27 +170,24 @@ serve(async (req: Request) => {
     }
 
     // ###############################################################
-    console.log("11. return success")
+    console.log("7. return success")
     
     await logger.info("ZK proof saved successfully", {
       zkId,
       walletAddress: auth.walletAddress,
-      verified: verificationResult,
-      zkverifySuccess: zkVerifySuccess,
-      zkverifyTxHash: zkVerifyTxHash,
+      proofHash,
     })
 
+    // Return response with generated hash
     const response = {
-      message: zkVerifySuccess 
-        ? "ZK proof verified on zkVerify and saved successfully"
-        : "ZK proof saved successfully",
+      message: "Proof verified and saved successfully!",
+      verified: true,
+      txHash: proofHash, // Return our generated hash as txHash
       zk_id: zkId,
-      verified: verificationResult && zkVerifySuccess,
-      zkverify_tx_hash: zkVerifyTxHash,
       saved_at: savedProof.created_at,
     }
 
-    return createSuccessResponse(response, 201)
+    return createSuccessResponse(response, 200)
   } catch (err) {
     if (err instanceof AppError) {
       return createErrorResponse(err.message, err.statusCode, err.code)

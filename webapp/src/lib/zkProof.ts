@@ -100,7 +100,8 @@ export const generateProof = async (
     const isValid = await backend.verifyProof({ proof, publicInputs });
     console.log("✅ Proof verified locally:", isValid);
 
-    onProgress?.(90, "Finalizing...");
+    onProgress?.(90, "Encoding proof...");
+    
     const proofB64 = btoa(String.fromCharCode(...proof));
 
     onProgress?.(100, "Proof generated successfully!");

@@ -1,0 +1,20 @@
+[package]
+name = "hash_store"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+soroban-sdk = "23.2.1"
+
+[profile.release]
+opt-level = "z"      # Optimize for size
+overflow-checks = true
+lto = true           # Link-time optimization
+codegen-units = 1    # Better optimization
+panic = "abort"      # Smaller binary size
+
+[dev-dependencies]
+soroban-sdk = { version = "23.2.1", features = ["testutils"] }

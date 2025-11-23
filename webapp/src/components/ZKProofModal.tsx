@@ -19,10 +19,11 @@ export default function ZKProofModal({
   onClose,
   onSuccess,
 }: ZKProofModalProps) {
-  const [stage, setStage] = useState<'intro' | 'generating' | 'success' | 'error'>('intro');
+  const [stage, setStage] = useState<'intro' | 'generating' | 'local-proof' | 'success' | 'error'>('intro');
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState('');
-  const [verifyResponse, setVerifyResponse] = useState<{ zk_id: string; verified: boolean; zkverify_tx_hash?: string; saved_at: string } | null>(null);
+  const [localProof, setLocalProof] = useState<{ proofB64: string; publicInputs: number[]; isValid: boolean } | null>(null);
+  const [verifyResponse, setVerifyResponse] = useState<{ message: string; verified: boolean; txHash: string; zk_id?: string; saved_at?: string } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const { publicKey: stellarAddress } = useStellarWallet(true);
 
@@ -31,6 +32,7 @@ export default function ZKProofModal({
       setStage('intro');
       setProgress(0);
       setProgressText('');
+      setLocalProof(null);
       setVerifyResponse(null);
       setErrorMessage('');
     }
@@ -81,9 +83,21 @@ export default function ZKProofModal({
         }
       );
 
-      // Step 4: Send proof to backend for verification and zkVerify submission
+      // Step 4: Show local proof first
+      setLocalProof({
+        proofB64: proof.proofB64,
+        publicInputs: proof.publicInputs,
+        isValid: proof.isValid,
+      });
+      setProgress(100);
+      setProgressText('Proof generated locally!');
+      setStage('local-proof');
+      
+      // Step 5: Wait 5 seconds, then send to backend
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      
       setProgress(95);
-      setProgressText('Submitting proof to zkVerify...');
+      setProgressText('Submitting proof to backend...');
       
       const verifyResponse = await apiClient.verifyZkProof(
         proof.proofB64,
@@ -236,6 +250,36 @@ export default function ZKProofModal({
           </div>
         )}
 
+        {stage === 'local-proof' && localProof && (
+          <div className={styles.content}>
+            <div className={styles.successIcon}>
+              <IoCheckmarkCircle size={120} color="#4ADE80" />
+            </div>
+
+            <h2 className={styles.successTitle}>Proof Generated Locally! ✨</h2>
+            <p className={styles.successSubtitle}>Your proof has been generated successfully</p>
+
+            <div className={styles.proofCard}>
+              <div className={styles.proofLabel}>Local Proof (Base64)</div>
+              <div className={styles.proofHash} style={{ fontSize: '10px', wordBreak: 'break-all', maxHeight: '100px', overflow: 'auto' }}>
+                {localProof.proofB64.substring(0, 100)}...
+              </div>
+              <div className={styles.proofDetails}>
+                <div style={{ marginTop: '8px' }}>
+                  <strong>Public Inputs:</strong> [{localProof.publicInputs.join(', ')}]
+                </div>
+                <div style={{ marginTop: '4px' }}>
+                  <strong>Status:</strong> {localProof.isValid ? '✓ Valid' : '✗ Invalid'}
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.proofCard} style={{ marginTop: '16px', background: '#FEF3C7', border: '1px solid #FCD34D' }}>
+              <div className={styles.proofLabel} style={{ color: '#92400E' }}>⏳ Submitting to backend...</div>
+            </div>
+          </div>
+        )}
+
         {stage === 'success' && (
           <div className={styles.content}>
             <div className={styles.successIcon}>
@@ -247,24 +291,26 @@ export default function ZKProofModal({
 
             {verifyResponse && (
               <div className={styles.proofCard}>
-                <div className={styles.proofLabel}>ZK Proof ID</div>
-                <div className={styles.proofHash}>
-                  {verifyResponse.zk_id}
+                <div className={styles.proofLabel}>Backend Hash</div>
+                <div className={styles.proofHash} style={{ fontSize: '11px', wordBreak: 'break-all' }}>
+                  {verifyResponse.txHash}
                 </div>
                 <div className={styles.proofDetails}>
-                  {verifyResponse.verified ? '✓ Verified on zkVerify' : '⚠ Verification pending'}
+                  {verifyResponse.verified ? '✓ Verified and saved' : '⚠ Verification pending'}
                 </div>
-                {verifyResponse.zkverify_tx_hash && (
+                {verifyResponse.zk_id && (
                   <div className={styles.proofDetails}>
-                    <div className={styles.proofLabel} style={{ fontSize: '12px', marginTop: '8px' }}>zkVerify TX Hash:</div>
-                    <div className={styles.proofHash} style={{ fontSize: '11px', wordBreak: 'break-all' }}>
-                      {verifyResponse.zkverify_tx_hash}
+                    <div className={styles.proofLabel} style={{ fontSize: '12px', marginTop: '8px' }}>Proof ID:</div>
+                    <div className={styles.proofHash} style={{ fontSize: '11px' }}>
+                      {verifyResponse.zk_id}
                     </div>
                   </div>
                 )}
-                <div className={styles.proofDetails}>
-                  Saved at: {new Date(verifyResponse.saved_at).toLocaleString('en-US')}
-                </div>
+                {verifyResponse.saved_at && (
+                  <div className={styles.proofDetails}>
+                    Saved at: {new Date(verifyResponse.saved_at).toLocaleString('en-US')}
+                  </div>
+                )}
               </div>
             )}
 

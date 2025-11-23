@@ -15,5 +15,19 @@ if (typeof window !== 'undefined') {
   if (typeof globalThis.global === 'undefined') {
     globalThis.global = globalThis;
   }
+
+  // Polyfill para TextDecoder/TextEncoder (caso necessário)
+  // TextDecoder/TextEncoder são nativos no browser moderno, mas garantimos que estão disponíveis
+  if (typeof globalThis.TextDecoder === 'undefined') {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { TextDecoder: NodeTextDecoder, TextEncoder: NodeTextEncoder } = require('util');
+    globalThis.TextDecoder = NodeTextDecoder as typeof globalThis.TextDecoder;
+    globalThis.TextEncoder = NodeTextEncoder as typeof globalThis.TextEncoder;
+  }
+  
+  // Garantir que TextDecoder está disponível como construtor
+  if (typeof TextDecoder === 'undefined' && typeof globalThis.TextDecoder !== 'undefined') {
+    (globalThis as any).TextDecoder = globalThis.TextDecoder;
+  }
 }
 

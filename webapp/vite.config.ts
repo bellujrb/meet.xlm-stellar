@@ -10,6 +10,12 @@ export default defineConfig({
     nodePolyfills({
       // Whether to polyfill `node:` protocol imports.
       protocolImports: true,
+      // Include util polyfills for TextDecoder/TextEncoder
+      globals: {
+        Buffer: true,
+        global: true,
+        process: true,
+      },
     }),
     VitePWA({
       registerType: 'autoUpdate',
@@ -44,7 +50,8 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}']
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024 // 5 MB (para incluir arquivos barretenberg)
       }
     })
   ],
