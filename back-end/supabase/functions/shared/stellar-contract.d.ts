@@ -4,7 +4,9 @@ declare module 'https://esm.sh/@stellar/stellar-sdk@14.1.1/contract' {
     result?: T;
     hash?: string;
     simulate(): Promise<{ result?: T }>;
-    signAndSend(keypair: any): Promise<{ hash: string }>;
+    signAndSend(keypair: any): Promise<{ hash: string; status?: string; [key: string]: any }>;
+    sign(keypair: any): AssembledTransaction<T>;
+    send(): Promise<{ hash: string; status?: string; [key: string]: any }>;
   }
 
   export class Client {

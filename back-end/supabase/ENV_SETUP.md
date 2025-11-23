@@ -129,9 +129,9 @@ Ou, se houver eventos:
 }
 ```
 
-## Configuração do Soroban (Futurenet)
+## Configuração do Soroban (Testnet)
 
-A integração está configurada para usar a **Futurenet** por padrão. Para que a função `verify` envie hashes ao contrato Soroban na Stellar, você precisa:
+A integração está configurada para usar a **Testnet** por padrão. Para que a função `verify` envie hashes ao contrato Soroban na Stellar, você precisa:
 
 1. **Adicionar a Seed Phrase como variável de ambiente:**
    - No Supabase Dashboard > Edge Functions > Secrets
@@ -141,19 +141,19 @@ A integração está configurada para usar a **Futurenet** por padrão. Para que
      ```
    - O sistema converterá automaticamente a seed phrase em uma secret key usando o caminho de derivação padrão do Stellar (`m/44'/148'/0'`)
 
-2. **Obter XLM na Futurenet:**
-   - Acesse: https://laboratory.stellar.org/#account-creator?network=futurenet
-   - Ou use o Friendbot da Futurenet para obter XLM de teste
+2. **Obter XLM na Testnet:**
+   - Acesse: https://laboratory.stellar.org/#account-creator?network=test
+   - Ou use o Friendbot da Testnet para obter XLM de teste
    - Certifique-se de que a conta derivada da seed phrase tenha XLM suficiente para pagar taxas de transação
 
 3. **Verificar o Contract ID:**
-   - O Contract ID está hardcoded no código: `CDDCZS36ZERM7L2C4H6CC3PYYQPLWR357BOEJROMTL4X5WLVDNO4GSLI`
-   - Certifique-se de que este contrato está deployado na **Futurenet**
+   - O Contract ID está hardcoded no código: `CCBMKHFNQNZGDO7UYWURJ3GE3TK566QCW7QXFP46JYX4IUVVDWLQNF57`
+   - Certifique-se de que este contrato está deployado na **Testnet**
 
 4. **Rede configurada:**
-   - **Rede padrão:** Futurenet
-   - **RPC URL padrão:** `https://soroban-futurenet.stellar.org:443`
-   - **Network Passphrase:** `Test SDF Future Network ; October 2022`
+   - **Rede padrão:** Testnet
+   - **RPC URL padrão:** `https://soroban-testnet.stellar.org:443`
+   - **Network Passphrase:** `Test SDF Network ; September 2015`
 
 ## Importante
 
@@ -162,6 +162,6 @@ A integração está configurada para usar a **Futurenet** por padrão. Para que
 - ⚠️ **NUNCA** commite secrets no código
 - ✅ Os secrets são armazenados de forma segura no Supabase
 - ✅ Cada function tem acesso automático aos secrets configurados
-- ⚠️ A conta Stellar derivada da seed phrase precisa ter XLM suficiente na **Futurenet** para pagar taxas de transação
+- ⚠️ A conta Stellar derivada da seed phrase precisa ter XLM suficiente na **Testnet** para pagar taxas de transação
 - ✅ A seed phrase é automaticamente convertida em secret key usando o caminho de derivação padrão do Stellar
 

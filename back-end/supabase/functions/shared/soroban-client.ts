@@ -9,10 +9,6 @@ if (!Keypair) {
   throw new Error('Failed to load Keypair from Stellar SDK')
 }
 // @ts-ignore - Deno import
-import { mnemonicToSeedSync } from "https://esm.sh/bip39@3.1.0"
-// @ts-ignore - Deno import
-import { derivePath } from "https://esm.sh/ed25519-hd-key@1.3.0"
-// @ts-ignore - Deno import
 import { Buffer } from "https://esm.sh/buffer@6.0.3"
 import { createLogger } from "./logger.ts"
 
@@ -26,11 +22,11 @@ declare const Deno: {
 const logger = createLogger("soroban-client")
 
 // Contract configuration
-const CONTRACT_ID = "CDDCZS36ZERM7L2C4H6CC3PYYQPLWR357BOEJROMTL4X5WLVDNO4GSLI"
+const CONTRACT_ID = "CCBMKHFNQNZGDO7UYWURJ3GE3TK566QCW7QXFP46JYX4IUVVDWLQNF57"
 
-// Network configuration - defaults to futurenet
+// Network configuration - defaults to testnet
 const getNetworkConfig = () => {
-  const network = Deno.env.get("SOROBAN_NETWORK") || "futurenet"
+  const network = Deno.env.get("SOROBAN_NETWORK") || "testnet"
   const rpcUrl = Deno.env.get("SOROBAN_RPC_URL") || 
     (network === "testnet" 
       ? "https://soroban-testnet.stellar.org:443"
@@ -63,67 +59,56 @@ function hexToBuffer32(hex: string): Buffer {
   return buffer
 }
 
-/**
- * Converts a seed phrase to a Stellar secret key
- * Uses BIP39 mnemonic to seed, then derives Stellar key using ed25519
- */
-function seedPhraseToSecretKey(seedPhrase: string): string {
-  try {
-    // Convert mnemonic to seed (returns Buffer)
-    const seed = mnemonicToSeedSync(seedPhrase)
-    
-    // Stellar uses derivation path m/44'/148'/0'
-    // This is the standard path for Stellar accounts
-    const derivationPath = "m/44'/148'/0'"
-    
-    // derivePath expects hex string for seed
-    const seedHex = seed instanceof Buffer ? seed.toString("hex") : seed
-    const derived = derivePath(derivationPath, seedHex)
-    
-    // derived.key is a Buffer or hex string
-    const keyBuffer = derived.key instanceof Buffer 
-      ? derived.key 
-      : Buffer.from(derived.key, "hex")
-    
-    // Create keypair from the derived seed (32 bytes for ed25519)
-    const keypair = Keypair.fromRawEd25519Seed(keyBuffer)
-    
-    return keypair.secret()
-  } catch (error) {
-    throw new Error(`Failed to convert seed phrase to secret key: ${error instanceof Error ? error.message : String(error)}`)
-  }
-}
+// Default secret key (hardcoded for this project)
+// SECRET KEY: SAKQJK2HXSU5CZAWUGCHLT55GK6BUEBS4DCWVW3MSS7QGKLGGFOJK74F
+// PUBLIC KEY: GC5VQVELE3LG2CJW4YBXT4KLIV5YNF3YFTXXU5IWYVGF3GJVNCIH6FAY
+const DEFAULT_SECRET_KEY = "SAKQJK2HXSU5CZAWUGCHLT55GK6BUEBS4DCWVW3MSS7QGKLGGFOJK74F"
 
 /**
- * Gets the secret key from environment (supports both seed phrase and direct secret key)
+ * Gets the secret key from environment or uses the default
  */
 function getSecretKey(): string {
-  // First, try to get seed phrase
-  const seedPhrase = Deno.env.get("SOROBAN_SEED_PHRASE")
-  if (seedPhrase) {
-    return seedPhraseToSecretKey(seedPhrase)
-  }
-  
-  // Fallback to direct secret key
+  // Try to get secret key from environment first
   const secretKey = Deno.env.get("SOROBAN_SECRET_KEY")
   if (secretKey) {
     return secretKey
   }
   
-  throw new Error("Either SOROBAN_SEED_PHRASE or SOROBAN_SECRET_KEY environment variable is required")
+  // Use default secret key
+  return DEFAULT_SECRET_KEY
 }
 
 /**
  * Creates a Soroban contract client
+ * @param keypair - Optional keypair for signing transactions. Required for write operations.
  */
-function createSorobanClient(): Client {
-  const { rpcUrl, networkPassphrase } = getNetworkConfig()
+function createSorobanClient(keypair?: any): Client {
+  const { rpcUrl, networkPassphrase, network } = getNetworkConfig()
   
-  return new Client({
+  logger.info("Creating Soroban client", {
+    contractId: CONTRACT_ID,
+    rpcUrl,
+    network,
+    networkPassphrase: networkPassphrase.substring(0, 20) + "...",
+    hasKeypair: !!keypair,
+  }).catch(() => {}) // Fire and forget
+  
+  const clientOptions: any = {
     contractId: CONTRACT_ID,
     networkPassphrase,
     rpcUrl,
-  })
+  }
+  
+  // Add signTransaction function if keypair is provided
+  if (keypair) {
+    const signTransaction = async (tx: any) => {
+      tx.sign(keypair)
+      return tx
+    }
+    clientOptions.signTransaction = signTransaction
+  }
+  
+  return new Client(clientOptions)
 }
 
 /**
@@ -154,16 +139,23 @@ export async function addHashToSoroban(
     // Convert eventId to Buffer
     const eventIdBuffer = Buffer.from(eventId, "utf-8")
 
-    // Create client
-    const client = createSorobanClient()
-
-    // Get secret key from environment (supports seed phrase or direct secret key)
+    // Get secret key (from environment or use default hardcoded key)
     const secretKey = getSecretKey()
 
     // Create keypair from secret key
     const keypair = Keypair.fromSecret(secretKey)
 
+    // Create client with signTransaction function
+    const client = createSorobanClient(keypair)
+
     // Prepare the transaction
+    await logger.info("Preparing transaction", {
+      eventId,
+      hashLength: hashBuffer.length,
+      contractId: CONTRACT_ID,
+      publicKey: keypair.publicKey(),
+    })
+
     const transaction = await client.add_hash({
       event_id: eventIdBuffer,
       hash: hashBuffer,
@@ -171,9 +163,49 @@ export async function addHashToSoroban(
       simulate: true,
     })
 
+    await logger.info("Transaction prepared, signing and sending", {
+      eventId,
+      hasTransaction: !!transaction,
+    })
+
     // Sign and send the transaction
-    // The signAndSend method returns a result with the transaction hash
-    const result = await transaction.signAndSend(keypair)
+    // Since signTransaction is provided in Client initialization, we can use signAndSend directly
+    await logger.info("Calling signAndSend", {
+      eventId,
+      keypairPublicKey: keypair.publicKey(),
+    })
+
+    let result: any
+    try {
+      // Use signAndSend - it will use the signTransaction function from Client initialization
+      result = await transaction.signAndSend()
+    } catch (signAndSendError) {
+      await logger.warn("signAndSend failed, trying alternative method", {
+        eventId,
+        error: signAndSendError instanceof Error ? signAndSendError.message : String(signAndSendError),
+      })
+      
+      // Fallback: try to sign and send manually
+      try {
+        // Get the underlying transaction and sign it
+        const tx = transaction as any
+        if (tx.tx && typeof tx.tx.sign === 'function') {
+          tx.tx.sign(keypair)
+          result = await tx.send()
+        } else {
+          throw new Error("Unable to access transaction for manual signing")
+        }
+      } catch (manualSignError) {
+        throw new Error(`Both signAndSend and manual signing failed: ${signAndSendError instanceof Error ? signAndSendError.message : String(signAndSendError)}`)
+      }
+    }
+
+    await logger.info("Transaction sent successfully", {
+      eventId,
+      resultHash: result?.hash,
+      resultStatus: result?.status,
+      resultKeys: Object.keys(result || {}),
+    })
 
     await logger.info("Hash added to Soroban contract successfully", {
       eventId,
