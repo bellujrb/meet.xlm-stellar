@@ -3,7 +3,7 @@
 - [App](https://meetxlm.vercel.app/)
 - [Demo Video](https://drive.google.com/drive/folders/1ZR2s52V_wsZLrvpZ4GjL07B17yFMNi-v?usp=sharing)
 - [Pitch Deck](https://goo.su/hcgMDd)
-- [Smart Contract Explorer](..)
+- [Smart Contract Explorer](https://stellar.expert/explorer/testnet/contract/CCBMKHFNQNZGDO7UYWURJ3GE3TK566QCW7QXFP46JYX4IUVVDWLQNF57)
 - [API Documentation](.)
 
 ---
