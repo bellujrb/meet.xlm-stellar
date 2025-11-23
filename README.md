@@ -1,89 +1,217 @@
 # Meet.XLM
 
-- [Hackathon Submission](.)
-- [Demo Video](..)
-- [Pitch Deck](.)
+- [App](https://meetxlm.vercel.app/)
+- [Demo Video](https://drive.google.com/drive/folders/1ZR2s52V_wsZLrvpZ4GjL07B17yFMNi-v?usp=sharing)
+- [Pitch Deck](https://goo.su/hcgMDd)
 - [Smart Contract Explorer](..)
 - [API Documentation](.)
 
------
+---
+## 💰 The Hidden Problem
 
-## 🎯 The Problem: Untracked Engagement
+**≈$100,000 USD** — Stellar distributed $100,000 at Meridian alone.  
+And has distributed **over $30M USD** in grants.
 
-The Stellar ecosystem **lacks a native, lightweight, and reliable way to verify or measure attendance** at community activities.
+But behind this number exists a **blind spot**:
 
-This absence results in:
+**There is no native, private, and anti-sybil way to prove real participation in XLM-funded events.**
 
-  * **❌ Poor Grant Measurement:** Stellar Foundation cannot measure the **real impact** of community grants.
-  * **❌ No Verifiable Reputation:** Participants' attendance does not build **portable, on-chain value**.
+Without this, blockchain doesn't touch the real world.
 
------
+---
 
-## ✨ The Solution: ZK-Powered Reputation and Privacy
+## 🔴 How It Works Today
 
-Meet.XLM is a Stellar-native protocol that uses **Soroban Smart Contracts** and **Zero-Knowledge Proofs (ZK-Proofs)** to provide private, verifiable engagement data.
+Today, reporting and metrics for community events and grants are:
+- ❌ **Manual**
+- ❌ **Opaque**  
+- ❌ **Inconsistent**
 
-### Core Innovations
+Result: **Stellar is growing in the dark** — no verifiable engagement data.
 
-| Innovation | Description | Impact |
-| :--- | :--- | :--- |
-| **Privacy via ZK-Proofs** | Verifies eligibility (e.g., minimum XLM stake) **without exposing the wallet address or exact balance.** | Prevents wallet *doxxing* and enables regulatory-friendly verification. |
-| **Stellar-Native Economics** | Leverages Stellar for high speed and **ultra-low cost** ($\approx \$0.00001$ per NFT mint). | Ensures economic viability for mass NFT issuance. |
-| **Social Gaming Layer** | Protocol encourages interaction by allowing attendees to **Cross-Reveal** each other's NFT rarities. | Proven to increase event duration by $\mathbf{40\%}$ and interactions by $\mathbf{3\times}$. |
+---
 
------
+## ✅ The Solution
 
-## 🏗️ Technical Architecture Focus
+**Meet.XLM** is a native, private, and anti-sybil protocol based on **ZK-UltraHonk** and **Soroban**.
 
-Meet.XLM is built on Soroban, positioning it as a core piece of Stellar infrastructure.
+Transform event participation into **verifiable on-chain reputation** using:
+- 🔐 **Zero-Knowledge Proofs** (ZK-proofs)
+- ⚡ **Soroban Smart Contracts**
+- 🎮 **Dynamic NFT Badges**
 
-  * **Smart Contracts:** **Soroban (Rust)** handles event registry, ZK verification, and NFT minting/reveal logic.
-  * **ZK-Proof System:** Generated client-side, proving balance/eligibility **without sending private data** to the server.
-  * **Flujo ZK:** Garantiza el **anonimato on-chain** al registrar solo un *hashed identity slot*.
+---
 
------
+## 🎯 How It Works
 
-## 🚀 Quick Start (Installation & Deployment)
-
-### Prerequisites
-
-`Node.js $\geq$ 18.x`, `Rust $\geq$ 1.70`, `Stellar CLI (soroban-cli)`.
-
-### Commands
-
-```bash
-# Clone repository and install dependencies
-git clone https://github.com/bellujrb/meet.xlm-stellar.git
-# ... (Commands to install dependencies and run locally) ...
-
-# Deploy Soroban Contract (Testnet)
-soroban contract deploy --wasm target/.../meet_xlm.wasm --network testnet --source ACCOUNT_SECRET_KEY
+```
+1. HOST logs into the app
+   ↓
+2. Creates an event
+   ↓
+3. Sets minimum XLM requirement (e.g., ≥100 XLM)
+   ↓
+4. Shares event link with community
+   ↓
+5. ATTENDEE selects event
+   ↓
+6. Generates ZK-proof (client-side) proving balance WITHOUT revealing wallet
+   ↓
+7. Proof verified on-chain via Soroban → Access granted
+   ↓
+8. At check-in → Receives NFT badge with rarity (Common/Rare/Epic)
+   ↓
+9. Social game: Scan others to reveal their NFTs
 ```
 
------
+**Result:** Verifiable, private, fraud-proof event participation.
 
-## 📈 Roadmap: Strategic Growth
+---
 
-| Phase | Estimated Period | Key Objectives (Interpretation) |
-| :--- | :--- | :--- |
-| **Phase 0: MVP** | Hackathon | **Core Focus:** Establishing the ZK-Proof/Soroban privacy pipeline. **Milestones:** Preparation for Governance Token + Series A. |
-| **Phase 1: Foundation & Validation** | Post-Hackathon (6 Months) | **30 Events Milestone**. Smart Contract Audit (CertiK). Stellar Foundation MOU (for grant metrics). |
-| **Phase 2: Scale** | 9 – 12 Months | Launch Public API, NFT Marketplace beta. Focus on **transaction speed optimization** (5-8 seconds). |
-| **Phase 3: Expansion** | 12 – 18 Months | **Multi-chain Bridge**. University Certification Program (Real-World Utility). Data Licensing System and Advanced Analytics. |
+## 🏗️ Architecture
 
------
+```
+┌─────────────┐
+│  ORGANIZER  │ ──► Create Event ──► ┌──────────┐
+└─────────────┘                       │ Backend  │
+                                      │  API     │ ──► Verify ZK ──► ┌──────────┐
+┌─────────────┐                       └──────────┘                   │ Soroban  │
+│  ATTENDEE   │ ──► Generate ZK ───────────────────────────────────► │ Contract │
+└─────────────┘     Proof (Client)                                   └──────────┘
+                                                                            │
+                                                                            ▼
+                                                                      Mint NFT
+```
 
-## 💰 Business Model
+### Core Components
+
+**1. ZK-Proof System (Privacy)**
+- Proves "has ≥X XLM" without exposing wallet or exact balance
+- Generated **client-side** (no server trust needed)
+- Uses **Noir circuits** compiled to WASM
+
+**2. Soroban Smart Contract**
+```rust
+create_event(host, min_xlm, max_attendees, rarity_config)
+mint_veiled_nft(attendee, event_id) 
+reveal_nft(nft_id, rarity_seed)
+cross_reveal(revealer, target_nft)
+```
+
+**3. Dynamic NFT Badges**
+- **Veiled** before check-in
+- **Revealed** with rarity at event
+- **Cross-Reveal**: Social game to reveal others' NFTs
+
+---
+
+## 🚀 Why Stellar?
+
+| Metric | Meet.XLM (Stellar) | POAP (Ethereum) |
+|--------|---------------------|-----------------|
+| **Cost per NFT** | $0.00001 | $5-20 |
+| **Mint Time** | 5-8s | 30-60s |
+| **Privacy** | ZK-proofs | Address exposed |
+| **Payment** | USDC native | External |
+
+**Example:** Event with 200 participants  
+- Stellar: **$0.002 total**  
+- Ethereum: **$2,000 total**
+
+---
+
+## 📊 Go-to-Market (LATAM Focus)
+
+Our GTM strategy targets **LATAM Stellar ecosystem** in partnership with chapters and ambassador leaders:
+
+✅ **Event Management** → Real-time dashboards, check-ins, metrics  
+✅ **Engagement & Gamification** → NFT rewards, leaderboards, social games  
+✅ **Privacy by Design** → ZK-proofs protect user data
+
+**Pilot Partners:**
+- Stellar LATAM Ambassadors
+- Blockchain Acceleration Foundation (BAF)
+- University chapters (Brazil, Argentina, Colombia)
+
+---
+
+## 🗺️ Roadmap
+
+### **Q4 2025: Pilot**
+- Launch with LATAM community leaders
+- Feedback iteration and continuous improvement
+- 30+ events milestone
+
+### **Q1 2026: Grant Funding**
+- Apply for Stellar Community Fund grant
+- Advance technical development (ZK circuits, analytics)
+- Partnership MOU with Stellar Foundation
+
+### **Q2 2026: DAO & Public Good**
+- Token launch (governance + utility)
+- Transform into sustainable Digital Public Good
+- White-label solution for ecosystem partners
+
+### **Technical Evolution:**
+
+**V0:** Generate and verify ZK-proofs using Soroban ✅  
+**V1:** Dashboard for event management, check-ins, engagement metrics  
+**V2:** Expand to prove ownership of ANY Stellar token (crucial for ambassadors)  
+**V3:** Mint private NFTs via NFC proximity for gamified in-person engagement tracking
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+```bash
+Node.js >= 18.x
+Rust >= 1.70
+Stellar CLI (soroban-cli)
+```
+
+### Installation
+```bash
+git clone https://github.com/bellujrb/meet.xlm-stellar.git
+cd meet.xlm-stellar
+
+# Frontend
+cd frontend && npm install && npm run dev
+
+# Backend
+cd backend && npm install && npm run dev
+
+# Soroban Contract
+cd contracts && cargo build --target wasm32-unknown-unknown --release
+```
+
+---
+
+## 👥 Dream Team
+
+Our team has **5+ years of experience** in blockchain engineering and web3 infrastructure.  
+Active engagement with **10+ web3 communities** and universities in the Brazil/LATAM ecosystem.
+
+**Lucas Bispo de Oliveira** — CEO & Blockchain Engineer  
+- [GitHub](https://github.com/bellujrb)
+
+**João Rubens** — CTO & Software Engineer  
+- 5+ years full-stack engineering
+- Expert in distributed systems
+
+**Jenny Tejedor** — Chief of Growth & Community  
+- LATAM ecosystem connector
+- 6+ years community management
 
 
------
+---
 
-## 👥 Team
+## 🏆 Built for Stellar Hack+ Buenos Aires 2025
 
-  * **Lucas Bispo de Oliveira** - CEO & Blockchain Engineer
-  * **João Rubens** - CTO & Software Engineer
-  * **Jenny Tejedor** - Designer and Project Manager
-
+Special thanks to:
+- Stellar Development Foundation (SDF)
+- Blockchain Acceleration Foundation (BAF)
+- The Stellar community in LATAM
 -----
 
 
