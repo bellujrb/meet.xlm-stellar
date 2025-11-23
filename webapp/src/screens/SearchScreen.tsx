@@ -31,7 +31,7 @@ export default function SearchScreen({
 
   const cities = ['All', 'Buenos Aires', 'São Paulo', 'Online'];
 
-  // Fetch events from API
+  // Fetch events from API - only non-registered events
   const fetchEvents = async () => {
     if (!visible) return;
 
@@ -39,12 +39,15 @@ export default function SearchScreen({
     try {
       const response = await apiClient.listEvents({
         walletAddress: stellarAddress || undefined,
+        registered: false, // Only fetch non-registered events
         limit: 100,
       });
       const events = response.events.map(apiEvent => apiClient.convertApiEventToEvent(apiEvent));
-      // Filter out registered events immediately to prevent visual flash
-      const unregisteredEvents = events.filter(event => !event.isRegistered);
-      setAvailableEvents(unregisteredEvents);
+      // Backend already filters, but we ensure no duplicates here
+      const uniqueEvents = events.filter((event, index, self) =>
+        index === self.findIndex((e) => e.id === event.id)
+      );
+      setAvailableEvents(uniqueEvents);
     } catch (error) {
       console.error('Error fetching events:', error);
       setAvailableEvents([]);
@@ -69,7 +72,7 @@ export default function SearchScreen({
   }, []);
 
   // Filter events by search query and city
-  // Note: registered events are already filtered out when fetching
+  // Note: registered events are already filtered out by backend when fetching
   const filteredEvents = availableEvents.filter((event) => {
     const matchesSearch =
       event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||

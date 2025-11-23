@@ -124,6 +124,7 @@ class ApiClient {
   async listEvents(
     options?: {
       status?: 'LIVE' | 'UPCOMING' | 'ENDED';
+      registered?: boolean; // true = only registered, false = only non-registered, undefined = all
       limit?: number;
       offset?: number;
       walletAddress?: string;
@@ -131,6 +132,7 @@ class ApiClient {
   ): Promise<ListEventsResponse> {
     const params = new URLSearchParams();
     if (options?.status) params.append('status', options.status);
+    if (options?.registered !== undefined) params.append('registered', options.registered.toString());
     if (options?.limit) params.append('limit', options.limit.toString());
     if (options?.offset) params.append('offset', options.offset.toString());
 

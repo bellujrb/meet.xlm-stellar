@@ -85,6 +85,19 @@ function getSecretKey(): string {
 function createSorobanClient(keypair?: any): Client {
   const { rpcUrl, networkPassphrase, network } = getNetworkConfig()
   
+  // Extract Transaction class from StellarSDK
+  // Transaction might be in different locations depending on SDK version
+  let Transaction: any = null
+  if (StellarSDK.Transaction) {
+    Transaction = StellarSDK.Transaction
+  } else if ((StellarSDK as any).default?.Transaction) {
+    Transaction = (StellarSDK as any).default.Transaction
+  } else if ((StellarSDK as any).xdr?.Transaction) {
+    Transaction = (StellarSDK as any).xdr.Transaction
+  } else if (StellarSDK.xdr && (StellarSDK.xdr as any).Transaction) {
+    Transaction = (StellarSDK.xdr as any).Transaction
+  }
+  
   logger.info("Creating Soroban client", {
     contractId: CONTRACT_ID,
     rpcUrl,
@@ -102,8 +115,117 @@ function createSorobanClient(keypair?: any): Client {
   // Add signTransaction function if keypair is provided
   if (keypair) {
     const signTransaction = async (tx: any) => {
-      tx.sign(keypair)
-      return tx
+      // The SDK may pass the transaction as XDR string or as an object
+      // We need to handle both cases
+      
+      let transaction: any = null
+      
+      // If tx is a string (XDR), decode it to a Transaction object
+      if (typeof tx === 'string') {
+        try {
+          // Try multiple ways to access Transaction.fromXDR
+          let transactionFromXDR: any = null
+          
+          // Method 1: Direct access
+          if (StellarSDK.Transaction && typeof StellarSDK.Transaction.fromXDR === 'function') {
+            transactionFromXDR = StellarSDK.Transaction.fromXDR
+          }
+          // Method 2: Through default export
+          else if ((StellarSDK as any).default?.Transaction?.fromXDR) {
+            transactionFromXDR = (StellarSDK as any).default.Transaction.fromXDR
+          }
+          // Method 3: Try to construct Transaction and use static method
+          else if (Transaction) {
+            // Check if it's a class with static fromXDR
+            if (typeof (Transaction as any).fromXDR === 'function') {
+              transactionFromXDR = (Transaction as any).fromXDR
+            }
+            // Or try to create instance and use instance method
+            else if (Transaction.prototype && typeof Transaction.prototype.fromXDR === 'function') {
+              // This won't work, but let's try
+            }
+          }
+          
+          if (transactionFromXDR) {
+            transaction = transactionFromXDR(tx, networkPassphrase)
+          } else {
+            // Last resort: try using xdr module directly
+            const xdrModule = StellarSDK.xdr || (StellarSDK as any).default?.xdr
+            if (xdrModule) {
+              // Decode the XDR envelope
+              const envelope = xdrModule.TransactionEnvelope.fromXDR(tx)
+              // Get the transaction from the envelope
+              const txV1 = envelope.v1()
+              if (txV1) {
+                const innerTx = txV1.tx()
+                // Create a new Transaction object - this is complex, let's try a different approach
+                // Actually, we might need to use TransactionBuilder or construct it manually
+                await logger.warn("Using XDR envelope workaround - may not work correctly").catch(() => {})
+                throw new Error('XDR decoding requires Transaction.fromXDR which is not available. Please check Stellar SDK version.')
+              }
+            }
+            throw new Error('Transaction.fromXDR is not available in StellarSDK. Available methods: ' + (Transaction ? Object.keys(Transaction).join(', ') : 'none'))
+          }
+        } catch (decodeError) {
+          await logger.error("Failed to decode XDR transaction", {
+            error: decodeError instanceof Error ? decodeError.message : String(decodeError),
+            hasTransaction: !!Transaction,
+            transactionType: typeof Transaction,
+            transactionMethods: Transaction ? Object.keys(Transaction).slice(0, 20).join(', ') : 'none',
+            stellarSDKKeys: Object.keys(StellarSDK).slice(0, 20).join(', '),
+          }).catch(() => {})
+          throw new Error(`Failed to decode transaction XDR: ${decodeError instanceof Error ? decodeError.message : String(decodeError)}`)
+        }
+      }
+      // If tx is an object, check for common properties
+      else if (tx && typeof tx === 'object') {
+        // Check if it's an AssembledTransaction with .tx property
+        if (tx.tx && typeof tx.tx.sign === 'function') {
+          transaction = tx.tx
+        }
+        // Check if it has .transaction property
+        else if (tx.transaction && typeof tx.transaction.sign === 'function') {
+          transaction = tx.transaction
+        }
+        // Check if tx itself is a Transaction
+        else if (typeof tx.sign === 'function') {
+          transaction = tx
+        }
+        // Try to get XDR and decode it
+        else if (tx.toXDR && typeof tx.toXDR === 'function') {
+          const xdr = tx.toXDR()
+          if (Transaction) {
+            transaction = Transaction.fromXDR(xdr, networkPassphrase)
+          }
+        }
+      }
+      
+      // Sign the transaction
+      if (transaction && typeof transaction.sign === 'function') {
+        transaction.sign(keypair)
+        await logger.info("Transaction signed successfully").catch(() => {})
+        
+        // Return the signed transaction (convert back to XDR if needed)
+        if (typeof tx === 'string') {
+          // Return XDR string
+          return transaction.toXDR()
+        } else if (tx && typeof tx === 'object' && tx.tx) {
+          // Update the tx property with signed transaction
+          tx.tx = transaction
+          return tx
+        } else {
+          // Return the signed transaction
+          return transaction
+        }
+      } else {
+        await logger.error("Unable to sign transaction", {
+          txType: typeof tx,
+          isString: typeof tx === 'string',
+          isObject: tx && typeof tx === 'object',
+          hasTransaction: !!transaction,
+        }).catch(() => {})
+        throw new Error('Unable to sign transaction: could not create or access Transaction object')
+      }
     }
     clientOptions.signTransaction = signTransaction
   }

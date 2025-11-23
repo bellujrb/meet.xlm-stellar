@@ -27,6 +27,7 @@ serve(async (req: Request) => {
     // Parse query parameters
     const url = new URL(req.url)
     const status = url.searchParams.get("status") // LIVE, UPCOMING, ENDED
+    const registeredParam = url.searchParams.get("registered") // true, false, or null
     const limit = parseInt(url.searchParams.get("limit") || "50", 10)
     const offset = parseInt(url.searchParams.get("offset") || "0", 10)
 
@@ -34,16 +35,38 @@ serve(async (req: Request) => {
       return createErrorResponse("Limit cannot exceed 100", 400)
     }
 
+    // Parse registered filter
+    let registeredFilter: boolean | null = null
+    if (registeredParam === "true") {
+      registeredFilter = true
+    } else if (registeredParam === "false") {
+      registeredFilter = false
+    }
+
     await log.info("Listing events", {
       walletAddress: auth.walletAddress || "anonymous",
       status,
+      registered: registeredFilter,
       limit,
       offset,
     })
 
     const supabase = getSupabaseClient()
 
-    // Build query
+    // If user is authenticated, get registered event IDs first (needed for filtering)
+    let registeredEventIds: string[] = []
+    if (auth.valid && auth.walletAddress) {
+      const { data: attendances } = await supabase
+        .from("event_attendances")
+        .select("event_id")
+        .eq("user_wallet", auth.walletAddress)
+
+      if (attendances) {
+        registeredEventIds = attendances.map((a) => a.event_id)
+      }
+    }
+
+    // Build query with proper filtering to avoid duplicates
     let query = supabase
       .from("events")
       .select(`
@@ -60,14 +83,40 @@ serve(async (req: Request) => {
         xlm_minimum,
         created_by,
         created_at
-      `)
-      .order("start_time", { ascending: true })
-      .range(offset, offset + limit - 1)
+      `, { count: "exact" })
 
     // Filter by status if provided
     if (status && ["LIVE", "UPCOMING", "ENDED"].includes(status)) {
       query = query.eq("status", status)
     }
+
+    // Filter by registration status if user is authenticated and filter is specified
+    // Note: We'll filter after the query for non-registered events to avoid complex SQL
+    let shouldFilterAfterQuery = false
+    if (auth.valid && auth.walletAddress && registeredFilter !== null) {
+      if (registeredFilter === true) {
+        // Only show registered events - can filter in query
+        if (registeredEventIds.length > 0) {
+          query = query.in("event_id", registeredEventIds)
+        } else {
+          // User has no registered events, return empty
+          return createSuccessResponse({
+            events: [],
+            count: 0,
+            limit,
+            offset,
+          })
+        }
+      } else {
+        // Only show non-registered events - filter after query
+        shouldFilterAfterQuery = true
+      }
+    }
+
+    // Apply ordering and pagination
+    query = query
+      .order("start_time", { ascending: true })
+      .range(offset, offset + limit - 1)
 
     const { data: events, error: queryError } = await query
 
@@ -80,21 +129,20 @@ serve(async (req: Request) => {
       )
     }
 
-    // If user is authenticated, check which events they're registered for
-    let registeredEventIds: string[] = []
-    if (auth.valid && auth.walletAddress) {
-      const { data: attendances } = await supabase
-        .from("event_attendances")
-        .select("event_id")
-        .eq("user_wallet", auth.walletAddress)
+    // Remove duplicates (safety check)
+    let uniqueEvents = (events || []).filter((event, index, self) =>
+      index === self.findIndex((e) => e.event_id === event.event_id)
+    )
 
-      if (attendances) {
-        registeredEventIds = attendances.map((a) => a.event_id)
-      }
+    // Filter out registered events if needed (for non-registered filter)
+    if (shouldFilterAfterQuery && registeredEventIds.length > 0) {
+      uniqueEvents = uniqueEvents.filter(
+        (event) => !registeredEventIds.includes(event.event_id)
+      )
     }
 
     // Get attendance counts for each event
-    const eventIds = events?.map((e) => e.event_id) || []
+    const eventIds = uniqueEvents.map((e) => e.event_id)
     let attendanceCounts: Record<string, number> = {}
 
     if (eventIds.length > 0) {
@@ -112,7 +160,7 @@ serve(async (req: Request) => {
     }
 
     // Format response
-    const formattedEvents = (events || []).map((event) => ({
+    const formattedEvents = uniqueEvents.map((event) => ({
       id: event.event_id,
       event_id: event.event_id,
       title: event.title,
