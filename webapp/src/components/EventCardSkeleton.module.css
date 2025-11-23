@@ -1,0 +1,164 @@
+.eventCardSkeleton {
+  background-color: #FFFFFF;
+  border-radius: 20px;
+  border: 3px solid #18181B;
+  box-shadow: 6px 6px 0px 0px #18181B;
+  overflow: hidden;
+  margin-bottom: 20px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.imageSkeleton {
+  width: 100%;
+  height: 200px;
+  background: linear-gradient(
+    90deg,
+    #E5E7EB 0%,
+    #F3F4F6 50%,
+    #E5E7EB 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-bottom: 3px solid #18181B;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.contentSkeleton {
+  padding: 16px;
+}
+
+.headerSkeleton {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+
+.organizerSkeleton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.organizerIconSkeleton {
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  background: linear-gradient(
+    90deg,
+    #E5E7EB 0%,
+    #F3F4F6 50%,
+    #E5E7EB 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  flex-shrink: 0;
+}
+
+.organizerTextSkeleton {
+  height: 16px;
+  width: 120px;
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    #E5E7EB 0%,
+    #F3F4F6 50%,
+    #E5E7EB 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.statusBadgeSkeleton {
+  width: 60px;
+  height: 28px;
+  border-radius: 16px;
+  background: linear-gradient(
+    90deg,
+    #E5E7EB 0%,
+    #F3F4F6 50%,
+    #E5E7EB 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border: 2px solid #18181B;
+  flex-shrink: 0;
+}
+
+.titleSkeleton {
+  height: 28px;
+  width: 80%;
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    #E5E7EB 0%,
+    #F3F4F6 50%,
+    #E5E7EB 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  margin-bottom: 16px;
+}
+
+.detailsSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detailRowSkeleton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detailRowSkeleton::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    #E5E7EB 0%,
+    #F3F4F6 50%,
+    #E5E7EB 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  flex-shrink: 0;
+}
+
+.detailRowSkeleton::after {
+  content: '';
+  height: 14px;
+  width: 150px;
+  border-radius: 7px;
+  background: linear-gradient(
+    90deg,
+    #E5E7EB 0%,
+    #F3F4F6 50%,
+    #E5E7EB 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+

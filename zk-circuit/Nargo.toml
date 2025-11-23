@@ -1,0 +1,8 @@
+[package]
+name = "zk-circuit"
+type = "bin"
+authors = ["zkvip"]
+compiler_version = ">=0.30.0"
+
+[dependencies]
+

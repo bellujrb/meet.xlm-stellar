@@ -1,0 +1,48 @@
+# Supabase Configuration
+
+[project]
+# Project reference ID (will be set when linking)
+# project_id = "your-project-ref"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+api_url = "http://127.0.0.1:54321"
+
+[inbucket]
+enabled = true
+port = 54324
+smtp_port = 54325
+pop3_port = 54326
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[functions."create-event"]
+verify_jwt = false
+
+[functions."list-events"]
+verify_jwt = false
+
+[functions."register-attendance"]
+verify_jwt = false
+
+[functions."get-event"]
+verify_jwt = false
+
+[functions."list-user-events"]
+verify_jwt = false
+

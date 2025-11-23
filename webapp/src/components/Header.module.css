@@ -1,0 +1,76 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background-color: #F5F1E8;
+  border-bottom: 3px solid #18181B;
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatarContainer {
+  position: relative;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  background-color: #FBBF24;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #18181B;
+  box-shadow: 3px 3px 0px 0px #18181B;
+  transform: rotate(-2deg);
+}
+
+.avatarEmoji {
+  font-size: 24px;
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: 900;
+  color: #18181B;
+  letter-spacing: -1px;
+  transform: rotate(-2deg);
+  margin: 0;
+}
+
+.settingsButton {
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  background-color: #FFFFFF;
+  border: 2px solid #18181B;
+  box-shadow: 2px 2px 0px 0px #18181B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.settingsButton:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px 0px #18181B;
+}
+
+.settingsButton:active {
+  transform: translate(0, 0);
+  box-shadow: 2px 2px 0px 0px #18181B;
+}
+
+.settingsIconContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #18181B;
+}
+

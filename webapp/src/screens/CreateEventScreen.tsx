@@ -1,0 +1,489 @@
+import { useState, useEffect, useRef } from 'react';
+import { IoClose, IoImage, IoCalendar, IoLocation, IoShieldCheckmark, IoTrash } from 'react-icons/io5';
+import { apiClient } from '../services/api';
+import { useStellarWallet } from '../hooks/useStellarWallet';
+import NotificationModal from '../components/NotificationModal';
+import styles from './CreateEventScreen.module.css';
+
+interface CreateEventScreenProps {
+  visible: boolean;
+  onClose: () => void;
+  onSuccess: (eventName: string, eventDate: string) => void;
+  stellarAddress?: string | null;
+}
+
+export default function CreateEventScreen({
+  visible,
+  onClose,
+  onSuccess,
+  stellarAddress: propStellarAddress,
+}: CreateEventScreenProps) {
+  const { publicKey: hookStellarAddress, isConnected } = useStellarWallet(true);
+  // Use prop if provided, otherwise fallback to hook
+  const stellarAddress = propStellarAddress ?? hookStellarAddress;
+  const [eventName, setEventName] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [location, setLocation] = useState('');
+  const [description, setDescription] = useState('');
+  const [organizer, setOrganizer] = useState('');
+  const [organizerIcon, setOrganizerIcon] = useState('🎉');
+  const [requireXLM, setRequireXLM] = useState(false);
+  const [xlmAmount, setXlmAmount] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [notification, setNotification] = useState<{ visible: boolean; type: 'success' | 'error' | 'info'; title: string; message: string }>({
+    visible: false,
+    type: 'info',
+    title: '',
+    message: '',
+  });
+  const [errors, setErrors] = useState({
+    eventName: '',
+    startDate: '',
+    location: '',
+    organizer: '',
+  });
+
+  useEffect(() => {
+    if (visible) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [visible]);
+
+  // Reset image when modal closes
+  useEffect(() => {
+    if (!visible) {
+      setSelectedImage(null);
+      setImageFile(null);
+    }
+  }, [visible]);
+
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setNotification({
+          visible: true,
+          type: 'error',
+          title: 'Invalid File',
+          message: 'Please select an image file',
+        });
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setNotification({
+          visible: true,
+          type: 'error',
+          title: 'File Too Large',
+          message: 'Image size must be less than 5MB',
+        });
+        return;
+      }
+
+      setImageFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedImage(null);
+    setImageFile(null);
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleImagePlaceholderClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleCreateEvent = async () => {
+    const newErrors = {
+      eventName: '',
+      startDate: '',
+      location: '',
+      organizer: '',
+    };
+
+    let hasError = false;
+    
+    if (!eventName.trim()) {
+      newErrors.eventName = 'Event name is required';
+      hasError = true;
+    }
+    
+    if (!startDate) {
+      newErrors.startDate = 'Start date is required';
+      hasError = true;
+    }
+    
+    if (!location.trim()) {
+      newErrors.location = 'Location is required';
+      hasError = true;
+    }
+
+    if (!organizer.trim()) {
+      newErrors.organizer = 'Organizer is required';
+      hasError = true;
+    }
+
+    setErrors(newErrors);
+
+    if (hasError) {
+      return;
+    }
+
+    // Check wallet connection - use both address and isConnected for reliability
+    // Final check - if we still don't have address, try to get it one more time
+    const finalAddress = stellarAddress || hookStellarAddress;
+    
+    // Debug log (can be removed later)
+    console.log('CreateEventScreen - Wallet check:', {
+      propStellarAddress,
+      hookStellarAddress,
+      finalAddress,
+      isConnected,
+    });
+    
+    if (!finalAddress) {
+      if (isConnected) {
+        // Wallet is connected but address not available - try to get it
+        setNotification({
+          visible: true,
+          type: 'error',
+          title: 'Wallet Error',
+          message: 'Wallet is connected but address is not available. Please try again.',
+        });
+      } else {
+        setNotification({
+          visible: true,
+          type: 'error',
+          title: 'Wallet Not Connected',
+          message: 'Please connect your wallet first',
+        });
+      }
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      // Convert datetime-local to ISO string
+      const startTime = new Date(startDate).toISOString();
+      
+      // Convert image to base64 if selected
+      // If no image is selected, imageUrl will be undefined/null and backend will handle default
+      let imageUrl: string | undefined = undefined;
+      if (selectedImage && imageFile) {
+        // Use base64 data URL directly
+        // Note: For production, consider uploading to Supabase Storage or similar service
+        // to avoid storing large base64 strings in the database
+        imageUrl = selectedImage;
+      }
+      // If no image, don't send imageUrl (backend will use null, frontend will use default)
+      
+      const response = await apiClient.createEvent(
+        {
+          title: eventName.trim(),
+          organizer: organizer.trim(),
+          organizerIcon: organizerIcon,
+          startTime,
+          location: location.trim(),
+          description: description.trim() || undefined,
+          imageUrl,
+          requiresXlm: requireXLM,
+          xlmMinimum: requireXLM && xlmAmount ? parseFloat(xlmAmount) : undefined,
+        },
+        finalAddress
+      );
+
+      onSuccess(response.title, new Date(response.start_time).toLocaleDateString());
+      
+      // Reset form
+    setEventName('');
+    setStartDate('');
+    setLocation('');
+    setDescription('');
+      setOrganizer('');
+      setOrganizerIcon('🎉');
+    setRequireXLM(false);
+    setXlmAmount('');
+      setSelectedImage(null);
+      setImageFile(null);
+      setErrors({ eventName: '', startDate: '', location: '', organizer: '' });
+    
+    onClose();
+    } catch (error) {
+      console.error('Error creating event:', error);
+      setNotification({
+        visible: true,
+        type: 'error',
+        title: 'Creation Failed',
+        message: error instanceof Error ? error.message : 'Failed to create event. Please try again.',
+      });
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  if (!visible) return null;
+
+  return (
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.header}>
+          <div className={styles.headerLeft}>
+            <div className={styles.headerIcon}>
+              <span className={styles.headerEmoji}>✨</span>
+            </div>
+            <h2 className={styles.headerTitle}>Create Event</h2>
+          </div>
+          <button onClick={onClose} className={styles.closeButton} aria-label="Close">
+            <IoClose size={28} />
+          </button>
+        </div>
+
+        <div className={styles.scrollView}>
+          <div className={styles.content}>
+            <div className={styles.imageUploadContainer}>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageSelect}
+                style={{ display: 'none' }}
+                id="image-upload-input"
+              />
+              {selectedImage ? (
+                <div className={styles.imagePreviewContainer}>
+                  <img 
+                    src={selectedImage} 
+                    alt="Event cover preview" 
+                    className={styles.imagePreview}
+                  />
+                  <button
+                    className={styles.removeImageButton}
+                    onClick={handleRemoveImage}
+                    aria-label="Remove image"
+                  >
+                    <IoTrash size={20} />
+                  </button>
+                  <button
+                    className={styles.changeImageButton}
+                    onClick={handleImagePlaceholderClick}
+                    aria-label="Change image"
+                  >
+                    Change Image
+                  </button>
+                </div>
+              ) : (
+                <div 
+                  className={styles.imagePlaceholder}
+                  onClick={handleImagePlaceholderClick}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div className={styles.imagePlaceholderContent}>
+                    <div className={styles.imageIcon}>
+                      <IoImage size={48} />
+                    </div>
+                    <div className={styles.imagePlaceholderText}>Add Cover</div>
+                    <div className={styles.imagePlaceholderSubtext}>Tap to add an image</div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label className={styles.label}>Event Name ✨</label>
+              <input
+                className={`${styles.input} ${errors.eventName ? styles.inputError : ''}`}
+                placeholder="Ex: Stellar Hack+ Buenos Aires"
+                value={eventName}
+                onChange={(e) => {
+                  setEventName(e.target.value);
+                  setErrors({ ...errors, eventName: '' });
+                }}
+              />
+              {errors.eventName && (
+                <div className={styles.errorContainer}>
+                  <span className={styles.errorText}>{errors.eventName}</span>
+                </div>
+              )}
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label className={styles.label}>Organizer 🏢</label>
+              <div className={styles.organizerInput}>
+                <input
+                  type="text"
+                  className={styles.organizerIconInput}
+                  placeholder="🎉"
+                  value={organizerIcon}
+                  onChange={(e) => setOrganizerIcon(e.target.value)}
+                  maxLength={2}
+                />
+                <input
+                  className={`${styles.input} ${styles.organizerNameInput} ${errors.organizer ? styles.inputError : ''}`}
+                  placeholder="Ex: Stellar Foundation"
+                  value={organizer}
+                  onChange={(e) => {
+                    setOrganizer(e.target.value);
+                    setErrors({ ...errors, organizer: '' });
+                  }}
+                />
+              </div>
+              {errors.organizer && (
+                <div className={styles.errorContainer}>
+                  <span className={styles.errorText}>{errors.organizer}</span>
+                </div>
+              )}
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label className={styles.label}>Start Date 🕐</label>
+              <div className={`${styles.dateInput} ${errors.startDate ? styles.inputError : ''}`}>
+                <IoCalendar size={20} color="#71717A" />
+                <input
+                  type="datetime-local"
+                  className={styles.dateInputField}
+                  value={startDate}
+                  onChange={(e) => {
+                    setStartDate(e.target.value);
+                    setErrors({ ...errors, startDate: '' });
+                  }}
+                />
+              </div>
+              {errors.startDate && (
+                <div className={styles.errorContainer}>
+                  <span className={styles.errorText}>{errors.startDate}</span>
+                </div>
+              )}
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label className={styles.label}>Location 📍</label>
+              <div className={`${styles.locationInput} ${errors.location ? styles.inputError : ''}`}>
+                <IoLocation size={20} color="#71717A" />
+                <input
+                  className={styles.locationInputText}
+                  placeholder="Enter address..."
+                  value={location}
+                  onChange={(e) => {
+                    setLocation(e.target.value);
+                    setErrors({ ...errors, location: '' });
+                  }}
+                />
+              </div>
+              {errors.location && (
+                <div className={styles.errorContainer}>
+                  <span className={styles.errorText}>{errors.location}</span>
+                </div>
+              )}
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label className={styles.label}>Description 📝</label>
+              <textarea
+                className={`${styles.input} ${styles.textArea}`}
+                placeholder="Add Description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={4}
+              />
+            </div>
+
+            <div className={styles.ticketsSection}>
+              <div className={styles.sectionHeaderRow}>
+                <h3 className={styles.sectionTitle}>Tickets</h3>
+                <span className={styles.sectionEmoji}>🎫</span>
+              </div>
+
+              <div className={styles.xlmRequirementCard}>
+                <div className={styles.xlmRequirementHeader}>
+                  <div className={styles.xlmRequirementLeft}>
+                    <div className={styles.xlmIcon}>
+                      <span className={styles.xlmIconText}>$</span>
+                    </div>
+                    <div>
+                      <div className={styles.xlmRequirementTitle}>Require Minimum XLM</div>
+                      <div className={styles.xlmRequirementSubtitle}>
+                        Participants must have balance
+                      </div>
+                    </div>
+                  </div>
+                  <label className={styles.switch}>
+                    <input
+                      type="checkbox"
+                      checked={requireXLM}
+                      onChange={(e) => setRequireXLM(e.target.checked)}
+                    />
+                    <span className={styles.slider}></span>
+                  </label>
+                </div>
+
+                {requireXLM && (
+                  <div className={styles.xlmAmountContainer}>
+                    <label className={styles.xlmAmountLabel}>Minimum amount</label>
+                    <div className={styles.xlmAmountInputContainer}>
+                      <input
+                        type="number"
+                        className={styles.xlmAmountInput}
+                        placeholder="0.00"
+                        value={xlmAmount}
+                        onChange={(e) => setXlmAmount(e.target.value)}
+                      />
+                      <div className={styles.xlmBadge}>
+                        <span className={styles.xlmBadgeText}>XLM</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ height: 120 }} />
+        </div>
+
+        <div className={styles.footer}>
+          <button
+            className={styles.createButton}
+            onClick={handleCreateEvent}
+            disabled={isCreating}
+          >
+            <IoShieldCheckmark size={24} />
+            <span className={styles.createButtonText}>
+              {isCreating ? 'Creating...' : 'Create Event'}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <NotificationModal
+        visible={notification.visible}
+        type={notification.type}
+        title={notification.title}
+        message={notification.message}
+        onClose={() => setNotification({ ...notification, visible: false })}
+      />
+    </div>
+  );
+}
+
