@@ -71,3 +71,4 @@ echo ""
 echo "🧪 Teste as functions agora com:"
 echo "   ./test-functions.sh"
 
+
