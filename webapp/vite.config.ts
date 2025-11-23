@@ -10,6 +10,12 @@ export default defineConfig({
     nodePolyfills({
       // Whether to polyfill `node:` protocol imports.
       protocolImports: true,
+      // Include util polyfills for TextDecoder/TextEncoder
+      globals: {
+        Buffer: true,
+        global: true,
+        process: true,
+      },
     }),
     VitePWA({
       registerType: 'autoUpdate',

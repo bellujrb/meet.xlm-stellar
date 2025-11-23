@@ -22,7 +22,7 @@ export default function ZKProofModal({
   const [stage, setStage] = useState<'intro' | 'generating' | 'success' | 'error'>('intro');
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState('');
-  const [verifyResponse, setVerifyResponse] = useState<{ zk_id: string; verified: boolean; zkverify_tx_hash?: string; saved_at: string } | null>(null);
+  const [verifyResponse, setVerifyResponse] = useState<{ message: string; verified: boolean; txHash: string; zk_id?: string; saved_at?: string } | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const { publicKey: stellarAddress } = useStellarWallet(true);
 
@@ -81,9 +81,9 @@ export default function ZKProofModal({
         }
       );
 
-      // Step 4: Send proof to backend for verification and zkVerify submission
+      // Step 4: Send proof to backend for verification and StellarVerify submission
       setProgress(95);
-      setProgressText('Submitting proof to zkVerify...');
+      setProgressText('Submitting proof to StellarVerify...');
       
       const verifyResponse = await apiClient.verifyZkProof(
         proof.proofB64,
@@ -247,24 +247,26 @@ export default function ZKProofModal({
 
             {verifyResponse && (
               <div className={styles.proofCard}>
-                <div className={styles.proofLabel}>ZK Proof ID</div>
-                <div className={styles.proofHash}>
-                  {verifyResponse.zk_id}
+                <div className={styles.proofLabel}>StellarVerify TX Hash</div>
+                <div className={styles.proofHash} style={{ fontSize: '11px', wordBreak: 'break-all' }}>
+                  {verifyResponse.txHash}
                 </div>
                 <div className={styles.proofDetails}>
-                  {verifyResponse.verified ? '✓ Verified on zkVerify' : '⚠ Verification pending'}
+                  {verifyResponse.verified ? '✓ Verified on StellarVerify' : '⚠ Verification pending'}
                 </div>
-                {verifyResponse.zkverify_tx_hash && (
+                {verifyResponse.zk_id && (
                   <div className={styles.proofDetails}>
-                    <div className={styles.proofLabel} style={{ fontSize: '12px', marginTop: '8px' }}>zkVerify TX Hash:</div>
-                    <div className={styles.proofHash} style={{ fontSize: '11px', wordBreak: 'break-all' }}>
-                      {verifyResponse.zkverify_tx_hash}
+                    <div className={styles.proofLabel} style={{ fontSize: '12px', marginTop: '8px' }}>Proof ID:</div>
+                    <div className={styles.proofHash} style={{ fontSize: '11px' }}>
+                      {verifyResponse.zk_id}
                     </div>
                   </div>
                 )}
-                <div className={styles.proofDetails}>
-                  Saved at: {new Date(verifyResponse.saved_at).toLocaleString('en-US')}
-                </div>
+                {verifyResponse.saved_at && (
+                  <div className={styles.proofDetails}>
+                    Saved at: {new Date(verifyResponse.saved_at).toLocaleString('en-US')}
+                  </div>
+                )}
               </div>
             )}
 

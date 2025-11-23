@@ -1,4 +1,4 @@
-import { SUPABASE_FUNCTIONS_URL } from '../config/api';
+import { SUPABASE_FUNCTIONS_URL, SUPABASE_ANON_KEY } from '../config/api';
 import { Event } from '../types';
 
 export interface CreateEventRequest {
@@ -75,6 +75,14 @@ class ApiClient {
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
     };
+
+    // Add Authorization header for Supabase Edge Functions
+    // Supabase Edge Functions require Authorization header with anon key
+    if (SUPABASE_ANON_KEY) {
+      headers['Authorization'] = `Bearer ${SUPABASE_ANON_KEY}`;
+    } else {
+      console.warn('⚠️ VITE_SUPABASE_ANON_KEY not configured. Authorization header will not be sent.');
+    }
 
     if (walletAddress) {
       headers['x-wallet-address'] = walletAddress;
@@ -190,10 +198,25 @@ class ApiClient {
     threshold: number,
     isValid: boolean,
     walletAddress: string
-  ): Promise<{ zk_id: string; verified: boolean; zkverify_tx_hash?: string; saved_at: string }> {
+  ): Promise<{ message: string; verified: boolean; txHash: string; zk_id?: string; saved_at?: string }> {
+    const headers = this.getHeaders(walletAddress);
+    
+    // Ensure Authorization header is present (required by Supabase Edge Functions)
+    const headersObj = headers as Record<string, string>;
+    if (!headersObj['Authorization'] && !headersObj['authorization']) {
+      throw new Error('VITE_SUPABASE_ANON_KEY is required. Please configure it in your .env file.');
+    }
+    
+    // Debug: log headers (sem mostrar a key completa por segurança)
+    console.log('🔍 verifyZkProof - Headers:', {
+      'Content-Type': headersObj['Content-Type'],
+      'x-wallet-address': headersObj['x-wallet-address'],
+      'Authorization': headersObj['Authorization'] || headersObj['authorization'] ? 'Bearer ***' : 'MISSING',
+    });
+    
     const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/verify`, {
       method: 'POST',
-      headers: this.getHeaders(walletAddress),
+      headers,
       body: JSON.stringify({
         proofB64,
         publicInputs,
@@ -203,7 +226,8 @@ class ApiClient {
       }),
     });
 
-    return this.handleResponse<{ zk_id: string; verified: boolean; zkverify_tx_hash?: string; saved_at: string }>(response);
+    const result = await this.handleResponse<{ message: string; verified: boolean; txHash: string; zk_id?: string; saved_at?: string }>(response);
+    return result;
   }
 
   convertApiEventToEvent(apiEvent: ListEventsResponse['events'][0]): Event {
